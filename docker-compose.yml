@@ -1,0 +1,58 @@
+networks:
+  nrv.net:
+    driver: bridge
+
+services:
+  # service api.nrv : api RESTful (php/slim) de la billetterie NRV
+  #
+  api.nrv:
+    build:
+      context: build
+      dockerfile: 8.5-cli.Dockerfile
+    ports:
+      - '7080:80'
+    volumes:
+      - ./app:/var/php
+    working_dir: /var/php
+    networks:
+      - nrv.net
+    depends_on:
+      - nrv.db
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
+
+  # service nrv.db : base de données PostgreSQL
+  # schéma + données de test chargés automatiquement au 1er démarrage
+  # (volume vide), dans l'ordre des préfixes 01-, 02-
+  nrv.db:
+    image: 'postgres:18.6'
+    env_file: ./nrv.env
+    ports:
+      - '5532:5432'
+    networks:
+      - nrv.net
+    volumes:
+      - ./app/sql/NRV.schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./app/sql/NRV.data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+      - ./app/sql:/var/sql
+
+  # service web.nrv : client html/css/js (fichiers statiques)
+  web.nrv:
+    image: 'nginx:1.29-alpine'
+    ports:
+      - '7081:80'
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+    networks:
+      - nrv.net
+    depends_on:
+      - api.nrv
+
+  # service adminer : administration de la base
+  adminer:
+    image: adminer
+    ports:
+      - '8880:8080'
+    networks:
+      - nrv.net
+    depends_on:
+      - nrv.db
