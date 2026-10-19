@@ -1,0 +1,1 @@
+INSERT INTO Tarif (nom, prix) VALUES ('normal', 20.00), ('reduit', 12.00);
