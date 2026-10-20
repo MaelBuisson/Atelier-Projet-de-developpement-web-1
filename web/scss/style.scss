@@ -1,6 +1,12 @@
-@use 'variables'as *;
-@use 'mixins'as *;
+// ==========================================
+// 1. CONFIGURATION INITIALE & VARIABLES SASS
+// ==========================================
 
+// Importation des modules pour centraliser le design (couleurs, espacements, breakpoints)
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Reset CSS basique pour uniformiser l'affichage sur tous les navigateurs
 * {
     box-sizing: border-box;
     margin: 0;
@@ -13,86 +19,49 @@ body {
     font-family: Arial, sans-serif;
 }
 
-// En tete fais  avec  flexbox
-
+// ==========================================
+// 2. EN-TÊTE GLOBAL (HEADER)
+// ==========================================
 .main-header {
+    // Utilisation de Flexbox pour aligner le logo à gauche et la navigation à droite
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: $gap-standard;
     background-color: $bg-card;
 
+    // Imbrication SASS pour isoler le style de la navigation
     nav {
-    display: flex;
-    gap: 1.5rem; 
-
-    a {
-      color: $text-main; 
-      text-decoration: none; 
-      font-weight: bold;
-      transition: color 0.3s ease; 
-
-      &:hover {
-        color: $color-primary; 
-      }
-    }
-}
-}
-
-// Utilisation de Flex et Grid
-
-.spectacles-grid  {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column; // Pour le mobile first
-    gap: $gap-standard;
-    padding: $gap-standard;
-
-
-@include tablet-up {
-    display: grid; // Mode tablette
-    grid-template-columns: repeat(2,  1fr); 
-}
-
-@include desktop-up {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.spectacle-card {
-    background-color: $bg-card;
-    border-radius: $radius-card;
-    overflow: hidden;
-    transition: transorm 0.3s ease, box-shadow 0.3s ease;
-
-    &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(230, 57, 70, 0.2);
-    }
-
-    .card-image {
-        background-color: #333;
-        height: 200px;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        color: $text-secondary;
-    }
+        gap: 1.5rem;
 
-    .card-content {
-        padding: $gap-standard;
+        a {
+            color: $text-main;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease; // Animation douce au survol
 
-        h2 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        p {
-            color: $text-secondary;
-            font-size: 0.9rem;
+            &:hover {
+                color: $color-primary;
+            }
         }
     }
 }
 
+// ==========================================
+// 3. LAYOUT PAGE D'ACCUEIL (Filtres + Grille)
+// ==========================================
+main {
+    // Approche Mobile-First : les éléments s'empilent par défaut (colonne)
+    display: flex;
+    flex-direction: column;
+    padding-top: 2rem;
+
+    // Sur grand écran, on passe sur un axe horizontal (barre latérale + contenu)
+    @include tablet-up {
+        flex-direction: row;
+        align-items: flex-start;
+    }
 }
 
 .filters-section {
@@ -103,44 +72,243 @@ body {
     flex-direction: column;
     gap: 1rem;
     margin: $gap-standard;
-    
 
+    // Fixe la largeur du panneau latéral sur grand écran
     @include tablet-up {
-    width: 250px; 
-    flex-shrink: 0; 
-  }
-
-
+        width: 250px;
+        flex-shrink: 0; // Empêche l'écrasement de la barre de filtres
+    }
 
     button {
-    background-color: transparent;
-    color: $color-primary;
-    border: 2px solid $color-primary;
-    padding: 0.5rem 1rem;
-    border-radius: $radius-card;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    
+        background-color: transparent;
+        color: $color-primary;
+        border: 2px solid $color-primary;
+        padding: 0.5rem 1rem;
+        border-radius: $radius-card;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
 
-    &:hover {
-        background-color: $color-primary;
-        color: #fff;
+        &:hover {
+            background-color: $color-primary;
+            color: #fff;
+        }
     }
 }
+
+// Grille de cartes réactive avec CSS Grid
+.spectacles-grid {
+    flex-grow: 1; // Prend tout l'espace restant à côté des filtres
+    display: flex;
+    flex-direction: column; // Mobile first : 1 colonne
+    gap: $gap-standard;
+    padding: $gap-standard;
+
+    // Utilisation de CSS Grid pour créer les colonnes responsives
+    @include tablet-up {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); // 2 colonnes sur tablette
+    }
+
+    @include desktop-up {
+        grid-template-columns: repeat(3, 1fr); // 3 colonnes sur PC
+    }
+
+    // Composant Carte Spectacle
+    .spectacle-card {
+        background-color: $bg-card;
+        border-radius: $radius-card;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        // Effet de soulèvement interactif
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(230, 57, 70, 0.2);
+        }
+
+        .card-image {
+            background-color: #333;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $text-secondary;
+        }
+
+        .card-content {
+            padding: $gap-standard;
+
+            h2 {
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
+            }
+
+            p {
+                color: $text-secondary;
+                font-size: 0.9rem;
+            }
+        }
+    }
 }
 
-main {
-  display: flex;
-  flex-direction: column;
-  padding-top: 2rem;
+// ==========================================
+// 4. LAYOUT PAGE "DÉTAIL SOIRÉE"
+// ==========================================
+.soiree-container {
+    display: flex;
+    flex-direction: column; // Mobile first
+    gap: 4rem;
+    padding: $gap-standard;
+    max-width: 1200px; // Contrainte de largeur pour la lisibilité
+    margin: 0 auto;
+    margin-top: 5rem;
 
-  @include tablet-up {
-    flex-direction: row; 
-    align-items: flex-start; 
-  }
+    // Agencement en 2 colonnes sur grand écran
+    @include tablet-up {
+        flex-direction: row; 
+        align-items: flex-start;
+    }
 }
 
+// Colonne de gauche (Informations)
+.soiree-info {
+    background-color: $bg-card;
+    border-radius: $radius-card;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    margin-top: 7rem;
 
+    @include tablet-up {
+        flex: 1; // Prend un tiers de l'espace (ratio 1:2)
+        position: sticky; // UX avancée : le bloc reste visible au scroll de la liste !
+        top: 2rem;
+    }
 
+    h1 {
+        color: $color-primary;
+        margin-bottom: 1rem;
+    }
 
+    .info-list {
+        list-style: none;
+        margin-bottom: 1.5rem;
+
+        li {
+            margin-bottom: 0.5rem;
+            color: $text-secondary;
+
+            strong {
+                color: $text-main;
+            }
+        }
+    }
+}
+
+// Bloc de tarification (Badges + Bouton)
+.tarifs-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-top: 1px solid #333;
+    padding-top: 1.5rem;
+    margin-top: 2rem;
+
+    .tarifs-badges {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap; // S'adapte si l'écran est trop étroit
+    }
+
+    .tarif-badge {
+        background-color: #333;
+        padding: 0.5rem 1rem;
+        border-radius: $radius-card;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .btn-ajouter-panier {
+        background-color: $color-primary;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: $radius-card;
+        font-weight: bold;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        align-self: flex-start;
+        display: inline-flex; // Permet de centrer l'icône avec le texte
+        align-items: center;
+        gap: 0.5rem;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+
+// Colonne de droite (Liste des spectacles)
+.spectacles-list h2 {
+    margin-bottom: 1.5rem;
+}
+
+.spectacles-list {
+    @include tablet-up {
+        flex: 2; // Prend deux tiers de l'espace (plus large que la sidebar info)
+    }
+}
+
+// Composant détaillé d'un spectacle (avec vidéo)
+.spectacle-detail-card {
+    background-color: $bg-card; 
+    border-radius: $radius-card;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column; // Vidéo en haut sur mobile
+
+    @include tablet-up {
+        flex-direction: row; // Vidéo à gauche sur PC
+    }
+    
+    .video-placeholder {
+        background-color: #000; 
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: $text-secondary;
+
+        @include tablet-up {
+            width: 350px; // Fige la largeur de la vidéo sur grand écran
+            height: auto; 
+            flex-shrink: 0; // Empêche l'écrasement de la zone vidéo
+        }
+    }
+
+    .spectacle-info {
+        padding: 1.5rem;
+        
+        h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .style-badge {
+            display: inline-block;
+            background-color: #333;
+            color: $color-primary;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .description {
+            margin-top: 1rem;
+            color: $text-secondary;
+            line-height: 1.5;
+        }
+    }
+}

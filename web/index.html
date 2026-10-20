@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fichier CSS unique, généré par la compilation de nos modules SCSS -->
     <link rel="stylesheet" href="css/style.css">
     <title>Nancy Rock Vibration</title>
 </head>
 <body>
+    <!-- En-tête global : utilise Flexbox pour espacer le logo et la navigation -->
     <header class="main-header">
         <div class="logo">NRV</div>
         <nav>
@@ -15,33 +17,40 @@
         </nav>
     </header>
 
+    <!-- Conteneur principal : gère le passage d'une colonne (mobile) à deux colonnes (PC) -->
     <main>
+        <!-- Colonne de gauche : Panneau latéral des filtres -->
         <section id="filtres" class="filters-section">
             <button>Filtrer par date</button>
             <button>Filtrer par style</button>
         </section>
 
+        <!-- Colonne de droite : Conteneur utilisant CSS Grid pour l'affichage responsive -->
         <section id="spectacles" class="spectacles-grid">
+            
+            <!-- Composant "Carte" réutilisable (prêt pour l'intégration des données dynamiques) -->
             <article class="spectacle-card">
+                <!-- Zone d'image avec ratio fixe -->
                 <div class="card-image">Image</div>
-                <div  class="card-content">
-                    <h2>Titre du spectacle</h2>
-                    <p>Date et Horaire</p>
-                </div>
-
-            </article>
-
-            <article class="spectacle-card">
-                <div class="card-image">Image</div>
-                <div  class="card-content">
+                <!-- Zone de contenu textuel -->
+                <div class="card-content">
                     <h2>Titre du spectacle</h2>
                     <p>Date et Horaire</p>
                 </div>
             </article>
 
+            <!-- Répétition des composants pour tester la grille CSS -->
             <article class="spectacle-card">
                 <div class="card-image">Image</div>
-                <div  class="card-content">
+                <div class="card-content">
+                    <h2>Titre du spectacle</h2>
+                    <p>Date et Horaire</p>
+                </div>
+            </article>
+
+            <article class="spectacle-card">
+                <div class="card-image">Image</div>
+                <div class="card-content">
                     <h2>Titre du spectacle</h2>
                     <p>Date et Horaire</p>
                 </div>
