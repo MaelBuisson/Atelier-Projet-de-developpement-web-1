@@ -61,8 +61,10 @@ CREATE TABLE utilisateur (
 );
 
 CREATE TABLE tarif (
-    nom  VARCHAR(30)   PRIMARY KEY,
-    prix NUMERIC(6, 2) NOT NULL CHECK (prix >= 0)
+    id_soiree      UUID          NOT NULL REFERENCES soiree (id_soiree),
+    nom            VARCHAR(30)   NOT NULL CHECK (nom IN ('normal', 'reduit')),
+    prix           NUMERIC(6, 2) NOT NULL CHECK (prix >= 0),
+    PRIMARY KEY (id_soiree, nom)
 );
 
 CREATE TABLE commande (
@@ -76,9 +78,10 @@ CREATE TABLE commande (
 CREATE TABLE soiree_dans_commande (
     id_commande UUID        NOT NULL REFERENCES commande (id_commande),
     id_soiree   UUID        NOT NULL REFERENCES soiree (id_soiree),
-    nom_tarif   VARCHAR(30) NOT NULL REFERENCES tarif (nom),
+    nom_tarif   VARCHAR(30) NOT NULL,
     quantite    INT         NOT NULL CHECK (quantite > 0),
-    PRIMARY KEY (id_commande, id_soiree, nom_tarif)
+    PRIMARY KEY (id_commande, id_soiree, nom_tarif),
+    FOREIGN KEY (id_soiree, nom_tarif) REFERENCES tarif (id_soiree, nom)
 );
 
 -- token : chaîne aléatoire générée par l'application, ex. bin2hex(random_bytes(32))
@@ -86,5 +89,6 @@ CREATE TABLE billet (
     token       CHAR(64)    PRIMARY KEY,
     id_soiree   UUID        NOT NULL REFERENCES soiree (id_soiree),
     id_commande UUID        NOT NULL REFERENCES commande (id_commande),
-    nom_tarif   VARCHAR(30) NOT NULL REFERENCES tarif (nom)
+    nom_tarif   VARCHAR(30) NOT NULL,
+    FOREIGN KEY (id_soiree, nom_tarif) REFERENCES tarif (id_soiree, nom)
 );
