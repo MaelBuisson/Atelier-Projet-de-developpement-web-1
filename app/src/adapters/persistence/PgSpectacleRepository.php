@@ -15,14 +15,14 @@ class PgSpectacleRepository implements SpectacleRepository
     public function findAll(): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, titre, horaire, soiree.date 
+            "SELECT id, titre, horaire, soiree.date, 
+            (Select url from image where idSpectacle = spectacle.id limit 1) as image
             FROM spectacle
             Join soiree ON spectacle.idSoiree = soiree.id"
         );
         $stmt->execute();
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $row;
     }
-
 
 }
