@@ -1,0 +1,52 @@
+@use 'variables'as *;
+@use 'mixins'as *;
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: bg;
+    color: $text-main;
+    font-family: Arial, sans-serif;
+}
+
+// En tete fais  avec  flexbox
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $gap-standard;
+    background-color: $bg-card;
+}
+
+// Utilisation de Flex et Grid
+
+.spectacles-grid  {
+    display: flex;
+    flex-direction: column; // Pour le mobile first
+    gap: $gap-standard;
+    padding: $gap-standard;
+
+
+@include tablet-up {
+    display: grid; // Mode tablette
+    grid-template-columns: repeat(2,  1fr); 
+}
+
+@include desktop-up {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.spectacle-card {
+    background-color: $bg-card;
+    border-radius: $radius-card;
+    padding: $gap-standard;
+}
+
+}
+
+
