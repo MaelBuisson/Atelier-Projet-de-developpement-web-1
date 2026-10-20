@@ -21,21 +21,22 @@ class PgTarifRepository implements TarifRepository
     }
 
     /**
-     * Retourne tous les tarifs du festival, du plus cher au moins cher.
+     * Retourne les tarifs de la soirée (normal, réduit), du plus cher au moins cher.
      * Le prix (NUMERIC) arrive sous forme de chaîne depuis PDO : il est converti en float.
      *
      * @return Tarif[]
      */
     #[Override]
-    public function findAll(): array
+    public function findBySoiree(string $idSoiree): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT *
+            'SELECT nom, prix
             FROM tarif
+            WHERE id_soiree = :id
             ORDER BY prix DESC
             '
         );
-        $stmt->execute();
+        $stmt->execute(['id' => $idSoiree]);
 
         $tarifs = [];
 
