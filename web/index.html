@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <title>Nancy Rock Vibration</title>
 </head>
+
 <body>
     <!-- En-tête global : utilise Flexbox pour espacer le logo et la navigation -->
     <header class="main-header">
@@ -21,15 +23,25 @@
     <main>
         <!-- Colonne de gauche : Panneau latéral des filtres -->
         <section id="filtres" class="filters-section">
-            <button>Filtrer par date</button>
-            <button>Filtrer par style</button>
+            <select id="filter-style" class="filter-select">
+                <option value="tous">Tous les styles</option>
+                <option value="rock">Classic Rock</option>
+                <option value="metal">Métal</option>
+            </select>
+
+            <select id="filter-date" class="filter-select">
+                <option value="tous">Toutes les dates</option>
+                <option value="19-oct">19 Octobre 2026</option>
+                <option value="22-oct">22 Octobre 2026</option>
+                <option value="25-oct">25 Octobre 2026</option>
+            </select>
         </section>
 
         <!-- Colonne de droite : Conteneur utilisant CSS Grid pour l'affichage responsive -->
         <section id="spectacles" class="spectacles-grid">
-            
+
             <!-- Composant "Carte" réutilisable (prêt pour l'intégration des données dynamiques) -->
-            <article class="spectacle-card">
+            <article class="spectacle-card" data-style="rock" data-date="19-oct">
                 <!-- Zone d'image avec ratio fixe -->
                 <div class="card-image">Image</div>
                 <!-- Zone de contenu textuel -->
@@ -40,7 +52,7 @@
             </article>
 
             <!-- Répétition des composants pour tester la grille CSS -->
-            <article class="spectacle-card">
+            <article class="spectacle-card" data-style="metal" data-date="22-oct">
                 <div class="card-image">Image</div>
                 <div class="card-content">
                     <h2>Titre du spectacle</h2>
@@ -48,17 +60,18 @@
                 </div>
             </article>
 
-            <article class="spectacle-card">
+            <article class="spectacle-card" data-style="rock" data-date="25-oct">
                 <div class="card-image">Image</div>
                 <div class="card-content">
                     <h2>Titre du spectacle</h2>
                     <p>Date et Horaire</p>
                 </div>
             </article>
-            
+
         </section>
     </main>
-    
+
     <script src="js/script.js"></script>
 </body>
+
 </html>

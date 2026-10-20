@@ -58,19 +58,20 @@ main {
     flex-shrink: 0;
   }
 }
-.filters-section button {
+.filters-section .filter-select {
   background-color: transparent;
   color: #E63946;
   border: 2px solid #E63946;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: bold;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  outline: none;
 }
-.filters-section button:hover {
-  background-color: #E63946;
-  color: #fff;
+.filters-section .filter-select option {
+  background-color: #1E1E1E;
+  color: #F5F5F5;
 }
 
 .spectacles-grid {

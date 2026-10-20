@@ -79,19 +79,20 @@ main {
         flex-shrink: 0; // Empêche l'écrasement de la barre de filtres
     }
 
-    button {
+    .filter-select {
         background-color: transparent;
         color: $color-primary;
         border: 2px solid $color-primary;
-        padding: 0.5rem 1rem;
+        padding: 0.75rem;
         border-radius: $radius-card;
-        cursor: pointer;
         font-weight: bold;
-        transition: all 0.3s ease;
-
-        &:hover {
-            background-color: $color-primary;
-            color: #fff;
+        cursor: pointer;
+        width: 100%;
+        outline: none;
+        
+        option {
+            background-color: $bg-card;
+            color: $text-main;
         }
     }
 }

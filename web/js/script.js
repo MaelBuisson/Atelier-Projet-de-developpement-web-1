@@ -9,4 +9,31 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     })
 
+
+    const selectStyle = document.getElementById('filter-style');
+const selectDate = document.getElementById('filter-date');
+
+function filtrerCartes() {
+    const styleChoisi = selectStyle.value;
+    const dateChoisie = selectDate.value;
+
+    cartesSpectacles.forEach(carte => {
+        const styleCarte = carte.getAttribute('data-style');
+        const dateCarte = carte.getAttribute('data-date');
+
+        const correspondStyle = (styleChoisi === 'tous' || styleCarte === styleChoisi);
+        const correspondDate = (dateChoisie === 'tous' || dateCarte === dateChoisie);
+
+        if (correspondStyle && correspondDate) {
+            carte.style.display = ''; 
+        } else {
+            carte.style.display = 'none'; 
+        }
+    });
+}
+
+
+selectStyle.addEventListener('change', filtrerCartes);
+selectDate.addEventListener('change', filtrerCartes);
+
 })
