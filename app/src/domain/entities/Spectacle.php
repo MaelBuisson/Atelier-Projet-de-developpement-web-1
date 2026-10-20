@@ -16,7 +16,7 @@ class Spectacle
 
     private array $images = [];
 
-    public function __construct(string $id, string $titre, string $description, DateTime $horaire, string $video, string $styleMusique)
+    public function __construct(string $id, string $titre, DateTime $horaire, ?string $description = null, ?string $video = null, ?string $styleMusique = null)
     {
         $this->idSpectacle = $id;
         $this->titre = $titre;
@@ -36,9 +36,9 @@ class Spectacle
         $this->images = array_merge($this->images, $images);
     }
 
-    public function getImage(): Image
+    public function getImage(): ?Image
     {
-        return $this->images[0];
+        return $this->images[0] ?? null;
     }
 
     public function getImages(): array
@@ -61,7 +61,7 @@ class Spectacle
         return $this->titre;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -71,12 +71,12 @@ class Spectacle
         return $this->horaire;
     }
 
-    public function getVideo(): string
+    public function getVideo(): ?string
     {
         return $this->video;
     }
 
-    public function getStyleMusique(): string
+    public function getStyleMusique(): ?string
     {
         return $this->styleMusique;
     }

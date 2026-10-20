@@ -4,14 +4,14 @@ namespace nrv\application\dto;
 
 use nrv\domain\entities\Spectacle;
 
-final class SpectacleDTO
+final class SpectacleDTO implements \JsonSerializable
 {
     private function __construct(
         public readonly string $idSpectacle,
         public readonly string $titre,
         public readonly string $date,
         public readonly string $horaire,
-        public readonly string $image,
+        public readonly ?string $image,
     ) {
     }
 
@@ -21,8 +21,8 @@ final class SpectacleDTO
             $s->getId(),
             $s->getTitre(),
             $s->getSoiree()->getDate()->format('Y-m-d'),
-            $s->getHoraire()->format('Y-m-d'),
-            $s->getImage() ?? null
+            $s->getHoraire()->format('H:i'),
+            $s->getImage()?->getUrl() ?? null
         );
     }
 

@@ -13,7 +13,7 @@ class Soiree
     private string $lieu;
     private int $nbPlace;
 
-    public function __construct(string $id, string $nom, DateTime $date, DateTime $horaireDebut, string $lieu, int $nbPlace)
+    public function __construct(string $id, DateTime $date, ?string $nom = null, ?DateTime $horaireDebut = null, ?string $lieu = null, ?int $nbPlace = 0)
     {
         $this->idSoiree = $id;
         $this->nom = $nom;

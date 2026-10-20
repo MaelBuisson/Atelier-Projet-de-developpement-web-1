@@ -5,6 +5,6 @@ namespace nrv\application\ports\api;
 interface SpectacleServiceInterface
 {
 
-    public function getAllSpectacle(): array;
+    public function getAllSpectacles(): array;
 
 }
