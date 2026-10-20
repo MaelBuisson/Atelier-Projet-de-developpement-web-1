@@ -1,9 +1,15 @@
+// Points de rupture (approche mobile first) : les styles de base visent le smartphone,
+// ces mixins ajoutent les adaptations pour les écrans plus larges.
+// Usage : .grille { @include tablet-up { grid-template-columns: 1fr 1fr; } }
+
+// tablette et au-delà
 @mixin tablet-up {
   @media (min-width: 768px) {
     @content;
   }
 }
 
+// ordinateur de bureau
 @mixin desktop-up {
   @media (min-width: 1024px) {
     @content;

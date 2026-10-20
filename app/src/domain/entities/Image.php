@@ -2,6 +2,9 @@
 
 namespace nrv\domain\entities;
 
+/**
+ * Image illustrant un spectacle (un spectacle peut en avoir plusieurs).
+ */
 class Image
 {
     private string $idImage;
@@ -13,6 +16,7 @@ class Image
         $this->url = $url;
     }
 
+    // ── accesseurs ─
     public function getId(): string
     {
         return $this->idImage;
