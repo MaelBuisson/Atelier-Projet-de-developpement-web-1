@@ -46,4 +46,40 @@ class Spectacle
         return $this->images;
     }
 
+    public function getSoiree(): Soiree
+    {
+        return $this->soiree;
+    }
+
+    public function getId(): string
+    {
+        return $this->idSpectacle;
+    }
+
+    public function getTitre(): string
+    {
+        return $this->titre;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getHoraire(): DateTime
+    {
+        return $this->horaire;
+    }
+
+    public function getVideo(): string
+    {
+        return $this->video;
+    }
+
+    public function getStyleMusique(): string
+    {
+        return $this->styleMusique;
+    }
+
+
 }
