@@ -3,13 +3,23 @@
 namespace nrv\adapters\config;
 
 use DI\ContainerBuilder;
+use nrv\adapters\persistence\PgSoireeRepository;
 use Psr\Container\ContainerInterface;
 
 use nrv\application\ports\api\SpectacleServiceInterface;
 use nrv\application\ports\spi\SpectacleRepository;
 use nrv\application\usecases\SpectacleService;
 use nrv\adapters\persistence\PgSpectacleRepository;
+use nrv\adapters\persistence\PgTarifRepository;
+use nrv\application\ports\api\SoireeServiceInterface;
+use nrv\application\ports\spi\SoireeRepository;
+use nrv\application\ports\spi\TarifRepository;
+use nrv\application\usecases\SoireeService;
 
+/**
+ * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
+ * (interface) à son implémentation. Les actions et les services ne reçoivent que des interfaces.
+ */
 final class ContainerConfig
 {
     public static function build(): \DI\Container
@@ -17,11 +27,21 @@ final class ContainerConfig
         $builder = new ContainerBuilder();
         $builder->addDefinitions([
 
-                // ── domain services ─
+            // ── domain services ─
             SpectacleServiceInterface::class => \DI\create(SpectacleService::class)
                 ->constructor(\DI\get(SpectacleRepository::class)),
 
+            // le service des soirées reçoit les trois ports SPI dont il a besoin (pas le PDO)
+            SoireeServiceInterface::class => \DI\create(SoireeService::class)
+                ->constructor(
+                    \DI\get(SoireeRepository::class),
+                    \DI\get(SpectacleRepository::class),
+                    \DI\get(TarifRepository::class)
+                ),
+
             // ── adapters ─
+            // connexion PDO unique, partagée par tous les repositories ; paramètres lus dans config/.env
+            // ERRMODE_EXCEPTION : une erreur SQL lève une exception au lieu de renvoyer false
             'nrv.pdo' => function (ContainerInterface $c) {
                 $dsn = "{$_ENV['DRIVER']}:host={$_ENV['HOST']};dbname={$_ENV['DATABASE']}";
                 $user = $_ENV['USERNAME'];
@@ -30,6 +50,12 @@ final class ContainerConfig
             },
 
             SpectacleRepository::class => \DI\create(PgSpectacleRepository::class)
+                ->constructor(\DI\get('nrv.pdo')),
+
+            SoireeRepository::class => \DI\create(PgSoireeRepository::class)
+                ->constructor(\DI\get('nrv.pdo')),
+
+            TarifRepository::class => \DI\create(PgTarifRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
         ]);
         return $builder->build();
