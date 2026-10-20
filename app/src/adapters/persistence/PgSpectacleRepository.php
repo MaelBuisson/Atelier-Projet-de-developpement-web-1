@@ -15,7 +15,9 @@ class PgSpectacleRepository implements SpectacleRepository
     public function findAll(): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, titre, horaire FROM spectacle"
+            "SELECT id, titre, horaire, soiree.date 
+            FROM spectacle
+            Join soiree ON spectacle.idSoiree = soiree.id"
         );
         $stmt->execute();
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
