@@ -31,52 +31,16 @@ body {
   color: #E63946;
 }
 
-.spectacles-grid {
-  flex-grow: 1;
+main {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
+  padding-top: 2rem;
 }
 @media (min-width: 768px) {
-  .spectacles-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  main {
+    flex-direction: row;
+    align-items: flex-start;
   }
-}
-@media (min-width: 1024px) {
-  .spectacles-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-.spectacles-grid .spectacle-card {
-  background-color: #1E1E1E;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transorm 0.3s ease, box-shadow 0.3s ease;
-}
-.spectacles-grid .spectacle-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(230, 57, 70, 0.2);
-}
-.spectacles-grid .spectacle-card .card-image {
-  background-color: #333;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #A3A3A3;
-}
-.spectacles-grid .spectacle-card .card-content {
-  padding: 1rem;
-}
-.spectacles-grid .spectacle-card .card-content h2 {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-.spectacles-grid .spectacle-card .card-content p {
-  color: #A3A3A3;
-  font-size: 0.9rem;
 }
 
 .filters-section {
@@ -109,16 +73,52 @@ body {
   color: #fff;
 }
 
-main {
+.spectacles-grid {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 2rem;
+  gap: 1rem;
+  padding: 1rem;
 }
 @media (min-width: 768px) {
-  main {
-    flex-direction: row;
-    align-items: flex-start;
+  .spectacles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
   }
+}
+@media (min-width: 1024px) {
+  .spectacles-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.spectacles-grid .spectacle-card {
+  background-color: #1E1E1E;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.spectacles-grid .spectacle-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(230, 57, 70, 0.2);
+}
+.spectacles-grid .spectacle-card .card-image {
+  background-color: #333;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #A3A3A3;
+}
+.spectacles-grid .spectacle-card .card-content {
+  padding: 1rem;
+}
+.spectacles-grid .spectacle-card .card-content h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.spectacles-grid .spectacle-card .card-content p {
+  color: #A3A3A3;
+  font-size: 0.9rem;
 }
 
 .soiree-container {
@@ -170,35 +170,39 @@ main {
 .tarifs-box {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   border-top: 1px solid #333;
   padding-top: 1.5rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
-@media (min-width: 768px) {
-  .tarifs-box {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
+.tarifs-box .tarifs-badges {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
-.tarifs-box p {
+.tarifs-box .tarif-badge {
+  background-color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   font-weight: bold;
-  font-size: 1.1rem;
-  margin: 0;
+  font-size: 1rem;
 }
-
-.btn-ajouter-panier {
+.tarifs-box .btn-ajouter-panier {
   background-color: #E63946;
   color: #fff;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: bold;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: opacity 0.3s ease;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-.btn-ajouter-panier:hover {
+.tarifs-box .btn-ajouter-panier:hover {
   opacity: 0.8;
 }
 

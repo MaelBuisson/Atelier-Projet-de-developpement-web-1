@@ -1,6 +1,12 @@
+// ==========================================
+// 1. CONFIGURATION INITIALE & VARIABLES SASS
+// ==========================================
+
+// Importation des modules pour centraliser le design (couleurs, espacements, breakpoints)
 @use 'variables' as *;
 @use 'mixins' as *;
 
+// Reset CSS basique pour uniformiser l'affichage sur tous les navigateurs
 * {
     box-sizing: border-box;
     margin: 0;
@@ -13,15 +19,18 @@ body {
     font-family: Arial, sans-serif;
 }
 
-// En tete fais  avec  flexbox
-
+// ==========================================
+// 2. EN-TÊTE GLOBAL (HEADER)
+// ==========================================
 .main-header {
+    // Utilisation de Flexbox pour aligner le logo à gauche et la navigation à droite
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: $gap-standard;
     background-color: $bg-card;
 
+    // Imbrication SASS pour isoler le style de la navigation
     nav {
         display: flex;
         gap: 1.5rem;
@@ -30,7 +39,7 @@ body {
             color: $text-main;
             text-decoration: none;
             font-weight: bold;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease; // Animation douce au survol
 
             &:hover {
                 color: $color-primary;
@@ -39,31 +48,80 @@ body {
     }
 }
 
-// Utilisation de Flex et Grid
-
-.spectacles-grid {
-    flex-grow: 1;
+// ==========================================
+// 3. LAYOUT PAGE D'ACCUEIL (Filtres + Grille)
+// ==========================================
+main {
+    // Approche Mobile-First : les éléments s'empilent par défaut (colonne)
     display: flex;
-    flex-direction: column; // Pour le mobile first
+    flex-direction: column;
+    padding-top: 2rem;
+
+    // Sur grand écran, on passe sur un axe horizontal (barre latérale + contenu)
+    @include tablet-up {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+.filters-section {
+    background-color: $bg-card;
+    border-radius: $radius-card;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: $gap-standard;
+
+    // Fixe la largeur du panneau latéral sur grand écran
+    @include tablet-up {
+        width: 250px;
+        flex-shrink: 0; // Empêche l'écrasement de la barre de filtres
+    }
+
+    button {
+        background-color: transparent;
+        color: $color-primary;
+        border: 2px solid $color-primary;
+        padding: 0.5rem 1rem;
+        border-radius: $radius-card;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: $color-primary;
+            color: #fff;
+        }
+    }
+}
+
+// Grille de cartes réactive avec CSS Grid
+.spectacles-grid {
+    flex-grow: 1; // Prend tout l'espace restant à côté des filtres
+    display: flex;
+    flex-direction: column; // Mobile first : 1 colonne
     gap: $gap-standard;
     padding: $gap-standard;
 
-
+    // Utilisation de CSS Grid pour créer les colonnes responsives
     @include tablet-up {
-        display: grid; // Mode tablette
-        grid-template-columns: repeat(2, 1fr);
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); // 2 colonnes sur tablette
     }
 
     @include desktop-up {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr); // 3 colonnes sur PC
     }
 
+    // Composant Carte Spectacle
     .spectacle-card {
         background-color: $bg-card;
         border-radius: $radius-card;
         overflow: hidden;
-        transition: transorm 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
 
+        // Effet de soulèvement interactif
         &:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(230, 57, 70, 0.2);
@@ -92,74 +150,28 @@ body {
             }
         }
     }
-
-}
-
-.filters-section {
-    background-color: $bg-card;
-    border-radius: $radius-card;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin: $gap-standard;
-
-
-    @include tablet-up {
-        width: 250px;
-        flex-shrink: 0;
-    }
-
-
-
-    button {
-        background-color: transparent;
-        color: $color-primary;
-        border: 2px solid $color-primary;
-        padding: 0.5rem 1rem;
-        border-radius: $radius-card;
-        cursor: pointer;
-        font-weight: bold;
-        transition: all 0.3s ease;
-
-
-        &:hover {
-            background-color: $color-primary;
-            color: #fff;
-        }
-    }
-}
-
-main {
-    display: flex;
-    flex-direction: column;
-    padding-top: 2rem;
-
-    @include tablet-up {
-        flex-direction: row;
-        align-items: flex-start;
-    }
 }
 
 // ==========================================
-// STYLE DE LA PAGE "DÉTAIL SOIRÉE"
+// 4. LAYOUT PAGE "DÉTAIL SOIRÉE"
 // ==========================================
-
 .soiree-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; // Mobile first
     gap: 4rem;
     padding: $gap-standard;
-    max-width: 1200px;
+    max-width: 1200px; // Contrainte de largeur pour la lisibilité
     margin: 0 auto;
     margin-top: 5rem;
 
+    // Agencement en 2 colonnes sur grand écran
     @include tablet-up {
         flex-direction: row; 
         align-items: flex-start;
     }
 }
 
+// Colonne de gauche (Informations)
 .soiree-info {
     background-color: $bg-card;
     border-radius: $radius-card;
@@ -168,8 +180,8 @@ main {
     margin-top: 7rem;
 
     @include tablet-up {
-        flex: 1;
-        position: sticky;
+        flex: 1; // Prend un tiers de l'espace (ratio 1:2)
+        position: sticky; // UX avancée : le bloc reste visible au scroll de la liste !
         top: 2rem;
     }
 
@@ -182,7 +194,6 @@ main {
         list-style: none;
         margin-bottom: 1.5rem;
 
-
         li {
             margin-bottom: 0.5rem;
             color: $text-secondary;
@@ -192,69 +203,75 @@ main {
             }
         }
     }
-
 }
 
+// Bloc de tarification (Badges + Bouton)
 .tarifs-box {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    border-top: 1px solid #333;;
+    gap: 1.5rem;
+    border-top: 1px solid #333;
     padding-top: 1.5rem;
-    margin-top: 1.5rem;
+    margin-top: 2rem;
 
-    @include tablet-up {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+    .tarifs-badges {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap; // S'adapte si l'écran est trop étroit
     }
 
-    p {
+    .tarif-badge {
+        background-color: #333;
+        padding: 0.5rem 1rem;
+        border-radius: $radius-card;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .btn-ajouter-panier {
+        background-color: $color-primary;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: $radius-card;
         font-weight: bold;
         font-size: 1.1rem;
-        margin: 0;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        align-self: flex-start;
+        display: inline-flex; // Permet de centrer l'icône avec le texte
+        align-items: center;
+        gap: 0.5rem;
+
+        &:hover {
+            opacity: 0.8;
+        }
     }
 }
 
-.btn-ajouter-panier {
-    background-color: $color-primary;
-    color: #fff;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: $radius-card;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.3s ease;
-
-    &:hover {
-        opacity: 0.8;
-    }
-
-}
-
+// Colonne de droite (Liste des spectacles)
 .spectacles-list h2 {
     margin-bottom: 1.5rem;
 }
 
 .spectacles-list {
     @include tablet-up {
-        flex: 2;
+        flex: 2; // Prend deux tiers de l'espace (plus large que la sidebar info)
     }
 }
 
-
+// Composant détaillé d'un spectacle (avec vidéo)
 .spectacle-detail-card {
     background-color: $bg-card; 
     border-radius: $radius-card;
     overflow: hidden;
     margin-bottom: 1.5rem;
     display: flex;
-    flex-direction: column; 
+    flex-direction: column; // Vidéo en haut sur mobile
 
     @include tablet-up {
-        flex-direction: row; 
+        flex-direction: row; // Vidéo à gauche sur PC
     }
-
     
     .video-placeholder {
         background-color: #000; 
@@ -265,9 +282,9 @@ main {
         color: $text-secondary;
 
         @include tablet-up {
-            width: 350px; 
+            width: 350px; // Fige la largeur de la vidéo sur grand écran
             height: auto; 
-            flex-shrink: 0; 
+            flex-shrink: 0; // Empêche l'écrasement de la zone vidéo
         }
     }
 
