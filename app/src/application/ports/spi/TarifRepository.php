@@ -10,7 +10,7 @@ use nrv\domain\entities\Tarif;
 interface TarifRepository
 {
     /**
-     * @return Tarif[] tous les tarifs du festival (normal, réduit)
+     * @return Tarif[] les tarifs de la soirée (normal, réduit), tableau vide si elle n'en a aucun
      */
-    public function findAll(): array;
+    public function findBySoiree(string $idSoiree): array;
 }
