@@ -10,9 +10,11 @@ use nrv\domain\entities\Spectacle;
 interface SpectacleRepository
 {
     /**
-     * @return Spectacle[] tous les spectacles, chacun rattaché à sa soirée
+     * @param string|null $style filtre sur le style de musique (insensible à la casse), null = pas de filtre
+     * @param string|null $date  filtre sur la date de la soirée (Y-m-d), null = pas de filtre
+     * @return Spectacle[] les spectacles correspondants, chacun rattaché à sa soirée
      */
-    public function findAll(): array;
+    public function findAll(?string $style = null, ?string $date = null): array;
 
     /**
      * @return Spectacle[] les spectacles de la soirée, tableau vide si elle n'en a aucun

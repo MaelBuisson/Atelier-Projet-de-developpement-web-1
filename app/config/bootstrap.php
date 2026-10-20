@@ -1,5 +1,6 @@
 <?php
 
+use Slim\Exception\HttpException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -8,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use nrv\adapters\config\ContainerConfig;
 use nrv\adapters\controllers\middlewares\Cors;
 use nrv\adapters\controllers\actions\ListerSpectaclesAction;
+use nrv\adapters\controllers\actions\GetSoireeDetailAction;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -20,17 +22,28 @@ $app = AppFactory::createFromContainer($container);
 $app->addBodyParsingMiddleware();
 $app->add(Cors::class);
 $app->addRoutingMiddleware();
-$errorMiddleware = $app->addErrorMiddleware(true, false, false);
+// détail des erreurs internes affiché uniquement si DISPLAY_ERROR_DETAILS=true dans config/.env (développement)
+$displayErrorDetails = filter_var($_ENV['DISPLAY_ERROR_DETAILS'] ?? false, FILTER_VALIDATE_BOOL);
+$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
 $errorHandler = $errorMiddleware->getDefaultErrorHandler();
 $errorHandler->forceContentType('application/json');
 $errorHandler->registerErrorRenderer('application/json', function ($exception, $displayErrorDetails) {
-    return json_encode(['message' => $exception->getMessage()]);
+    // les erreurs HTTP de Slim (404, 405…) ont un message destiné au client ;
+    // les autres (PDO, bug…) peuvent révéler l'infrastructure : message générique en production
+    $visible = $exception instanceof HttpException || $displayErrorDetails;
+
+    return json_encode(['message' => $visible ? $exception->getMessage() : 'Erreur interne du serveur']);
 });
 
 // ── ajout des routes ─
 $app->group('/spectacles', function (RouteCollectorProxy $group) {
     $group->get('', ListerSpectaclesAction::class)
         ->setName('spectacles-list');
+});
+
+$app->group('/soirees', function (RouteCollectorProxy $group) {
+    $group->get('/{id}', GetSoireeDetailAction::class)
+        ->setName('soiree-detail');
 });
 
 // CORS : options pour les requêtes preflight

@@ -24,20 +24,37 @@ class PgSpectacleRepository implements SpectacleRepository
     }
 
     /**
-     * Retourne tous les spectacles, triés par date de soirée puis par horaire.
+     * Retourne les spectacles, triés par date de soirée puis par horaire.
      * Chaque spectacle est rattaché à sa soirée (nécessaire pour afficher la date dans la liste)
      * et reçoit sa première image, s'il en a une.
      *
+     * @param string|null $style style de musique (sans tenir compte de la casse), null = tous
+     * @param string|null $date  date de la soirée au format Y-m-d, null = toutes
      * @return Spectacle[]
      */
-    public function findAll(): array
+    public function findAll(?string $style = null, ?string $date = null): array
     {
+        $conditions = [];
+        $params = [];
+
+        if ($style !== null) {
+            $conditions[] = 'LOWER(spectacle.style_musique) = LOWER(:style)';
+            $params['style'] = $style;
+        }
+        if ($date !== null) {
+            $conditions[] = 'soiree.date = :date';
+            $params['date'] = $date;
+        }
+
+        // $where ne contient que du texte écrit ici, jamais la saisie de l'utilisateur :
+        // les valeurs passent par les paramètres :style et :date de la requête préparée
+        $where = $conditions === [] ? '' : 'WHERE ' . implode(' AND ', $conditions);
         // les colonnes de soiree sont renommées (alias) car spectacle et soiree ont toutes
         // deux une colonne horaire : sans alias, l'une écraserait l'autre dans le tableau associatif.
         // LEFT JOIN LATERAL : récupère une seule image par spectacle (LIMIT 1), et garde
         // les spectacles sans image (colonnes image à NULL)
         $stmt = $this->pdo->prepare(
-            'SELECT spectacle.id_spectacle, spectacle.titre, spectacle.description, spectacle.horaire,
+            "SELECT spectacle.id_spectacle, spectacle.titre, spectacle.description, spectacle.horaire,
                     spectacle.video, spectacle.style_musique,
                     soiree.id_soiree, soiree.nom AS soiree_nom, soiree.thematique AS soiree_thematique,
                     soiree.date AS soiree_date, soiree.horaire AS soiree_horaire,
@@ -51,9 +68,10 @@ class PgSpectacleRepository implements SpectacleRepository
                 ORDER BY url
                 LIMIT 1
             ) img ON true
-            ORDER BY soiree.date, spectacle.horaire'
+            $where
+            ORDER BY soiree.date, spectacle.horaire"
         );
-        $stmt->execute();
+        $stmt->execute($params);
 
         $spectacles = [];
 

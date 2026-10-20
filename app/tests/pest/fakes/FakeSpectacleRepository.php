@@ -15,9 +15,19 @@ class FakeSpectacleRepository implements SpectacleRepository
     {
     }
 
-    public function findAll(): array
+    /**
+     * Même contrat que PgSpectacleRepository::findAll() : style comparé sans tenir compte
+     * de la casse, date comparée à celle de la soirée du spectacle.
+     */
+    public function findAll(?string $style = null, ?string $date = null): array
     {
-        return array_merge(...array_values($this->parSoiree));
+        $tous = array_merge(...array_values($this->parSoiree));
+
+        return array_values(array_filter(
+            $tous,
+            fn (Spectacle $s) => ($style === null || mb_strtolower($s->getStyleMusique()) === mb_strtolower($style))
+                && ($date === null || $s->getSoiree()?->getDate()->format('Y-m-d') === $date)
+        ));
     }
 
     public function getBySoiree(string $id): array

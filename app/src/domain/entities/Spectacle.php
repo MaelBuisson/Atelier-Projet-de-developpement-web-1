@@ -4,6 +4,11 @@ namespace nrv\domain\entities;
 
 use DateTimeImmutable;
 
+/**
+ * Spectacle (concert) joué pendant une soirée, par un ou plusieurs artistes.
+ * La description et la vidéo sont facultatives ; la soirée, les images et les artistes
+ * sont rattachés après la construction, par les repositories ou le use case.
+ */
 class Spectacle
 {
     private string $idSpectacle;

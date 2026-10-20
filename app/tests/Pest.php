@@ -27,11 +27,11 @@ function creerSoiree(string $id, string $nom = 'Rock Night'): Soiree
 }
 
 /**
- * Crée un spectacle de test à l'horaire donné (format H:i:s), avec ses artistes.
+ * Crée un spectacle de test à l'horaire donné (format H:i:s), avec ses artistes et son style.
  *
  * @param Artiste[] $artistes
  */
-function creerSpectacle(string $id, string $titre, string $horaire, array $artistes = []): Spectacle
+function creerSpectacle(string $id, string $titre, string $horaire, array $artistes = [], string $style = 'rock'): Spectacle
 {
     $spectacle = new Spectacle(
         $id,
@@ -39,7 +39,7 @@ function creerSpectacle(string $id, string $titre, string $horaire, array $artis
         "Description de $titre",
         DateTimeImmutable::createFromFormat('!H:i:s', $horaire),
         "https://video.example/$id",
-        'rock'
+        $style
     );
     $spectacle->addArtistes($artistes);
 
