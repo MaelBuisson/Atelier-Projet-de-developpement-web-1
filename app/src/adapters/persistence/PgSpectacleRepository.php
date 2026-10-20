@@ -4,6 +4,7 @@ namespace nrv\adapters\persistence;
 
 use DateTimeImmutable;
 use nrv\application\ports\spi\SpectacleRepository;
+use nrv\domain\entities\Artiste;
 use nrv\domain\entities\Soiree;
 use nrv\domain\entities\Spectacle;
 use PDO;
@@ -89,10 +90,13 @@ class PgSpectacleRepository implements SpectacleRepository
         $spectacles = [];
 
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $spectacles[] = $this->toSpectacle($row);
+            $spectacle = $this->toSpectacle($row);
+
+            // indexé par id pour rattacher ensuite chaque artiste au bon spectacle
+            $spectacles[$spectacle->getId()] = $spectacle;
         }
 
-        return $spectacles;
+        return $this->chargerArtistes($spectacles);
     }
 
     /**
@@ -110,5 +114,56 @@ class PgSpectacleRepository implements SpectacleRepository
             $row['video'],
             $row['style_musique']
         );
+    }
+
+    /**
+     * Charge les artistes de tous les spectacles en une seule requête (évite une requête par spectacle).
+     *
+     * @param Spectacle[] $spectacles spectacles indexés par leur id
+     * @return Spectacle[] les mêmes spectacles avec leurs artistes, sous forme de liste
+     */
+    private function chargerArtistes(array $spectacles): array
+    {
+        // sans spectacle, la clause IN () serait vide : erreur de syntaxe en PostgreSQL
+        if ($spectacles === []) {
+            return [];
+        }
+
+        $ids = array_keys($spectacles);
+
+        // un paramètre '?' par id : la requête reste préparée quel que soit le nombre de spectacles
+        $placeHolders = implode(', ', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT jds.id_spectacle, a.id_artiste, a.nom, a.prenom
+            FROM jouer_dans_spectacle jds
+            JOIN artiste a ON a.id_artiste = jds.id_artiste
+            WHERE jds.id_spectacle IN ($placeHolders)
+            "
+        );
+        $stmt->execute($ids);
+
+        // artistes regroupés par spectacle : id_spectacle => Artiste[]
+        $parSpectacle = [];
+
+        // artistes déjà construits, indexés par id : un artiste présent dans plusieurs
+        // spectacles est représenté par un seul objet
+        $artistes = [];
+
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $artistes[$row['id_artiste']] ??= new Artiste(
+                $row['id_artiste'],
+                $row['nom'],
+                $row['prenom']
+            );
+
+            $parSpectacle[$row['id_spectacle']][] = $artistes[$row['id_artiste']];
+        }
+
+        foreach ($parSpectacle as $idSpectacle => $liste) {
+            $spectacles[$idSpectacle]->addArtistes($liste);
+        }
+
+        // array_values : liste indexée 0, 1, 2… pour que json_encode produise un tableau et non un objet
+        return array_values($spectacles);
     }
 }
