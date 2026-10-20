@@ -2,21 +2,25 @@
 
 namespace nrv\domain\entities;
 
-use DateTime;
+use DateTimeImmutable;
 
 class Spectacle
 {
     private string $idSpectacle;
     private string $titre;
-    private string $description;
-    private DateTime $horaire;
-    private string $video;
+    private ?string $description;
+    private DateTimeImmutable $horaire;
+    private ?string $video;
     private string $styleMusique;
-    private Soiree $soiree;
+    private ?Soiree $soiree = null;
 
+    /** @var Image[] */
     private array $images = [];
 
-    public function __construct(string $id, string $titre, DateTime $horaire, ?string $description = null, ?string $video = null, ?string $styleMusique = null)
+    /** @var Artiste[] */
+    private array $artistes = [];
+
+    public function __construct(string $id, string $titre, ?string $description, DateTimeImmutable $horaire, ?string $video, string $styleMusique)
     {
         $this->idSpectacle = $id;
         $this->titre = $titre;
@@ -31,24 +35,16 @@ class Spectacle
         $this->soiree = $soiree;
     }
 
+    /** @param Image[] $images */
     public function addImages(array $images): void
     {
         $this->images = array_merge($this->images, $images);
     }
 
-    public function getImage(): ?Image
+    /** @param Artiste[] $artistes */
+    public function addArtistes(array $artistes): void
     {
-        return $this->images[0] ?? null;
-    }
-
-    public function getImages(): array
-    {
-        return $this->images;
-    }
-
-    public function getSoiree(): Soiree
-    {
-        return $this->soiree;
+        $this->artistes = array_merge($this->artistes, $artistes);
     }
 
     public function getId(): string
@@ -66,7 +62,7 @@ class Spectacle
         return $this->description;
     }
 
-    public function getHoraire(): DateTime
+    public function getHoraire(): DateTimeImmutable
     {
         return $this->horaire;
     }
@@ -76,10 +72,31 @@ class Spectacle
         return $this->video;
     }
 
-    public function getStyleMusique(): ?string
+    public function getStyleMusique(): string
     {
         return $this->styleMusique;
     }
 
+    public function getSoiree(): ?Soiree
+    {
+        return $this->soiree;
+    }
 
+    // première image, utilisée dans la liste des spectacles ; null si le spectacle n'a pas d'image
+    public function getImage(): ?Image
+    {
+        return $this->images[0] ?? null;
+    }
+
+    /** @return Image[] */
+    public function getImages(): array
+    {
+        return $this->images;
+    }
+
+    /** @return Artiste[] */
+    public function getArtistes(): array
+    {
+        return $this->artistes;
+    }
 }

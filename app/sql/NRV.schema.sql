@@ -1,98 +1,90 @@
-DROP TABLE IF EXISTS Billet;
-DROP TABLE IF EXISTS SoireeDansCommande;
-DROP TABLE IF EXISTS Commande;
-DROP TABLE IF EXISTS Tarif;
-DROP TABLE IF EXISTS Utilisateur;
-DROP TABLE IF EXISTS JouerDansSpectacle;
-DROP TABLE IF EXISTS Artiste;
-DROP TABLE IF EXISTS Image;
-DROP TABLE IF EXISTS Spectacle;
-DROP TABLE IF EXISTS Soiree;
+-- Schéma PostgreSQL de la billetterie NRV
+-- identifiants : UUID générés par la base (gen_random_uuid, natif depuis PostgreSQL 13)
+-- nommage : snake_case (PostgreSQL convertit en minuscules les identifiants non quotés)
 
-CREATE TABLE Soiree (
-    idSoiree   INT AUTO_INCREMENT PRIMARY KEY,
+DROP TABLE IF EXISTS billet CASCADE;
+DROP TABLE IF EXISTS soiree_dans_commande CASCADE;
+DROP TABLE IF EXISTS commande CASCADE;
+DROP TABLE IF EXISTS tarif CASCADE;
+DROP TABLE IF EXISTS utilisateur CASCADE;
+DROP TABLE IF EXISTS jouer_dans_spectacle CASCADE;
+DROP TABLE IF EXISTS artiste CASCADE;
+DROP TABLE IF EXISTS image CASCADE;
+DROP TABLE IF EXISTS spectacle CASCADE;
+DROP TABLE IF EXISTS soiree CASCADE;
+
+CREATE TABLE soiree (
+    id_soiree  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     nom        VARCHAR(100) NOT NULL,
     thematique VARCHAR(100) NOT NULL,
-    `date`     DATE         NOT NULL,
+    date       DATE         NOT NULL,
     horaire    TIME         NOT NULL,
     lieu       VARCHAR(150) NOT NULL,
-    nbPlace    INT          NOT NULL
+    nb_place   INT          NOT NULL CHECK (nb_place > 0)
 );
 
-CREATE TABLE Spectacle (
-    idSpectacle  INT AUTO_INCREMENT PRIMARY KEY,
-    titre        VARCHAR(150) NOT NULL,
-    description  TEXT,
-    horaire      TIME         NOT NULL,
-    video        VARCHAR(255),
-    styleMusique VARCHAR(50)  NOT NULL,
-    idSoiree     INT          NOT NULL,
-    FOREIGN KEY (idSoiree) REFERENCES Soiree(idSoiree)
+CREATE TABLE spectacle (
+    id_spectacle  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    titre         VARCHAR(150) NOT NULL,
+    description   TEXT,
+    horaire       TIME         NOT NULL,
+    video         VARCHAR(255),
+    style_musique VARCHAR(50)  NOT NULL,
+    id_soiree     UUID         NOT NULL REFERENCES soiree (id_soiree)
 );
 
-CREATE TABLE Image (
-    idImage     INT AUTO_INCREMENT PRIMARY KEY,
-    url         VARCHAR(255) NOT NULL,
-    idSpectacle INT          NOT NULL,
-    FOREIGN KEY (idSpectacle) REFERENCES Spectacle(idSpectacle)
+CREATE TABLE image (
+    id_image     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    url          VARCHAR(255) NOT NULL,
+    id_spectacle UUID         NOT NULL REFERENCES spectacle (id_spectacle)
 );
 
-CREATE TABLE Artiste (
-    idArtiste INT AUTO_INCREMENT PRIMARY KEY,
-    nom       VARCHAR(100) NOT NULL,
-    prenom    VARCHAR(100)
+CREATE TABLE artiste (
+    id_artiste UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    nom        VARCHAR(100) NOT NULL,
+    prenom     VARCHAR(100)
 );
 
-CREATE TABLE JouerDansSpectacle (
-    idSpectacle INT NOT NULL,
-    idArtiste   INT NOT NULL,
-    PRIMARY KEY (idSpectacle, idArtiste),
-    FOREIGN KEY (idSpectacle) REFERENCES Spectacle(idSpectacle),
-    FOREIGN KEY (idArtiste)   REFERENCES Artiste(idArtiste)
+CREATE TABLE jouer_dans_spectacle (
+    id_spectacle UUID NOT NULL REFERENCES spectacle (id_spectacle),
+    id_artiste   UUID NOT NULL REFERENCES artiste (id_artiste),
+    PRIMARY KEY (id_spectacle, id_artiste)
 );
 
-CREATE TABLE Utilisateur (
-    idUtilisateur INT AUTO_INCREMENT PRIMARY KEY,
-    email         VARCHAR(150) NOT NULL UNIQUE,
-    nom           VARCHAR(100) NOT NULL,
-    prenom        VARCHAR(100) NOT NULL,
-    password      VARCHAR(255) NOT NULL,                
-    role          INT,
+CREATE TABLE utilisateur (
+    id_utilisateur UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    email          VARCHAR(150) NOT NULL UNIQUE,
+    nom            VARCHAR(100) NOT NULL,
+    prenom         VARCHAR(100) NOT NULL,
+    password       VARCHAR(255) NOT NULL,
+    role           INT          NOT NULL DEFAULT 1
 );
 
-CREATE TABLE Tarif (
-    nom  VARCHAR(30)  PRIMARY KEY,                       
-    prix DECIMAL(6,2) NOT NULL
+CREATE TABLE tarif (
+    nom  VARCHAR(30)   PRIMARY KEY,
+    prix NUMERIC(6, 2) NOT NULL CHECK (prix >= 0)
 );
 
-CREATE TABLE Commande (
-    idCommande    INT AUTO_INCREMENT PRIMARY KEY,
-    dateCreation  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    montantTotal  DECIMAL(8,2)  NOT NULL DEFAULT 0,
-    statut        VARCHAR(10)   NOT NULL,
-    idUtilisateur INT           NOT NULL,
-    FOREIGN KEY (idUtilisateur) REFERENCES Utilisateur(idUtilisateur)
+CREATE TABLE commande (
+    id_commande    UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    date_creation  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    montant_total  NUMERIC(8, 2) NOT NULL DEFAULT 0,
+    statut         VARCHAR(10)   NOT NULL,
+    id_utilisateur UUID          NOT NULL REFERENCES utilisateur (id_utilisateur)
 );
 
-CREATE TABLE SoireeDansCommande (
-    idCommande INT         NOT NULL,
-    idSoiree   INT         NOT NULL,
-    nomTarif   VARCHAR(30) NOT NULL,
-    quantite   INT         NOT NULL,
-    PRIMARY KEY (idCommande, idSoiree, nomTarif),
-    FOREIGN KEY (idCommande) REFERENCES Commande(idCommande),
-    FOREIGN KEY (idSoiree)   REFERENCES Soiree(idSoiree),
-    FOREIGN KEY (nomTarif)   REFERENCES Tarif(nom)
+CREATE TABLE soiree_dans_commande (
+    id_commande UUID        NOT NULL REFERENCES commande (id_commande),
+    id_soiree   UUID        NOT NULL REFERENCES soiree (id_soiree),
+    nom_tarif   VARCHAR(30) NOT NULL REFERENCES tarif (nom),
+    quantite    INT         NOT NULL CHECK (quantite > 0),
+    PRIMARY KEY (id_commande, id_soiree, nom_tarif)
 );
 
-CREATE TABLE Billet (
-    token      CHAR(64)    PRIMARY KEY,                  
-    idSoiree   INT         NOT NULL,
-    idCommande INT         NOT NULL,
-    nomTarif   VARCHAR(30) NOT NULL,
-    FOREIGN KEY (idSoiree)   REFERENCES Soiree(idSoiree),
-    FOREIGN KEY (idCommande) REFERENCES Commande(idCommande),
-    FOREIGN KEY (nomTarif)   REFERENCES Tarif(nom)
+-- token : chaîne aléatoire générée par l'application, ex. bin2hex(random_bytes(32))
+CREATE TABLE billet (
+    token       CHAR(64)    PRIMARY KEY,
+    id_soiree   UUID        NOT NULL REFERENCES soiree (id_soiree),
+    id_commande UUID        NOT NULL REFERENCES commande (id_commande),
+    nom_tarif   VARCHAR(30) NOT NULL REFERENCES tarif (nom)
 );
-
-
