@@ -20,7 +20,7 @@ final class EnregistrerUtilisateurDTO
             $texte('email'),
             $texte('nom'),
             $texte('prenom'),
-            is_string($data['password'] ?? null) ? $data['password'] : '' // jamais de trim
+            is_string($data['password'] ?? null) ? $data['password'] : ''
         );
     }
 }
