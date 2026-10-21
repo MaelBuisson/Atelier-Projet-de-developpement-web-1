@@ -27,4 +27,16 @@ class FakeSoireeRepository implements SoireeRepository
         // même contrat que le vrai repository : exception si la soirée n'existe pas
         return $this->soirees[$id] ?? throw new SoireeNotFound($id);
     }
+
+    /**
+     * Même contrat que PgSoireeRepository::findAll() : soirées triées par date puis par horaire.
+     */
+    public function findAll(): array
+    {
+        $soirees = array_values($this->soirees);
+
+        usort($soirees, fn (Soiree $a, Soiree $b) => [$a->getDate(), $a->getHoraire()] <=> [$b->getDate(), $b->getHoraire()]);
+
+        return $soirees;
+    }
 }

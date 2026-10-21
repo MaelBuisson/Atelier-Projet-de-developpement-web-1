@@ -1,14 +1,16 @@
 <?php
 
 /*
- * Tests du use case « détail d'une soirée » (SoireeService::getSoireeDetail).
+ * Tests des use cases des soirées : détail (getSoireeDetail) et liste (getAllSoirees).
  * Les repositories sont remplacés par des fakes : le service ne dépend que des ports SPI.
  */
 
+use nrv\application\dto\SoireeDTO;
 use nrv\application\dto\SoireeDetailDTO;
 use nrv\application\dto\SpectacleDetailDTO;
 use nrv\application\usecases\SoireeService;
 use nrv\domain\entities\Artiste;
+use nrv\domain\entities\Soiree;
 use nrv\domain\entities\Tarif;
 use nrv\domain\exceptions\SoireeNotFound;
 use tests\pest\fakes\FakeSoireeRepository;
@@ -118,4 +120,86 @@ it('produit le JSON attendu par le client', function () {
         ->and($json['spectacles'][0])->toHaveKeys(
             ['id', 'titre', 'artistes', 'description', 'horaire', 'video', 'styleMusique']
         );
+});
+
+// ── liste des soirées (getAllSoirees) ─
+
+/**
+ * Service dont le repository contient les soirées données, sans spectacle ni tarif.
+ *
+ * @param Soiree[] $soirees
+ */
+function serviceAvecSoirees(array $soirees): SoireeService
+{
+    return new SoireeService(
+        new FakeSoireeRepository($soirees),
+        new FakeSpectacleRepository(),
+        new FakeTarifRepository()
+    );
+}
+
+/**
+ * Soirée de test à la date et à l'heure données (Y-m-d et H:i:s).
+ */
+function soireeLe(string $id, string $nom, string $date, string $horaire): Soiree
+{
+    return new Soiree(
+        $id,
+        $nom,
+        'Rock',
+        new DateTimeImmutable($date),
+        DateTimeImmutable::createFromFormat('!H:i:s', $horaire),
+        'Salle Poirel',
+        600
+    );
+}
+
+it('retourne un SoireeDTO par soirée', function () {
+    expect($this->service->getAllSoirees())
+        ->toHaveCount(3)
+        ->each->toBeInstanceOf(SoireeDTO::class);
+});
+
+it('trie les soirées par date puis par horaire', function () {
+    // soirées données dans le désordre : le tri doit venir du repository, pas de l'ordre d'insertion
+    $service = serviceAvecSoirees([
+        soireeLe('s3', 'Clôture', '2027-07-10', '21:00:00'),
+        soireeLe('s2', 'Nuit Métal', '2027-07-09', '20:30:00'),
+        soireeLe('s1b', 'Blues Night', '2027-07-08', '19:30:00'),
+        soireeLe('s1a', 'Ouverture', '2027-07-08', '20:00:00'),
+    ]);
+
+    $noms = array_map(fn (SoireeDTO $s) => $s->nom, $service->getAllSoirees());
+
+    expect($noms)->toBe(['Blues Night', 'Ouverture', 'Nuit Métal', 'Clôture']);
+});
+
+it("formate la date et l'horaire de chaque soirée", function () {
+    $service = serviceAvecSoirees([soireeLe('s1', 'Ouverture', '2027-07-08', '20:00:00')]);
+
+    [$soiree] = $service->getAllSoirees();
+
+    expect($soiree->idSoiree)->toBe('s1')
+        ->and($soiree->date)->toBe('2027-07-08')
+        ->and($soiree->horaire)->toBe('20:00')
+        ->and($soiree->lieu)->toBe('Salle Poirel');
+});
+
+it('produit le JSON attendu par la liste des soirées, sans le nombre de places', function () {
+    $service = serviceAvecSoirees([soireeLe('s1', 'Ouverture', '2027-07-08', '20:00:00')]);
+
+    $json = json_decode(json_encode($service->getAllSoirees()), true);
+
+    expect($json[0])->toBe([
+        'id' => 's1',
+        'nom' => 'Ouverture',
+        'thematique' => 'Rock',
+        'date' => '2027-07-08',
+        'horaire' => '20:00',
+        'lieu' => 'Salle Poirel',
+    ]);
+});
+
+it("retourne une liste vide quand il n'y a aucune soirée", function () {
+    expect(serviceAvecSoirees([])->getAllSoirees())->toBe([]);
 });
