@@ -1,6 +1,6 @@
 <?php
 
-namespace nrv\adapters\security;
+namespace nrv\adapters\securite;
 
 use Firebase\JWT\JWT;
 use nrv\application\ports\spi\TokenProvider;
@@ -17,6 +17,7 @@ class JwtTokenProvider implements TokenProvider
         }
     }
 
+    // Méthode pour générer un token JWT pour un utilisateur donné
     public function generer(Utilisateur $utilisateur): string
     {
         $maintenant = time();

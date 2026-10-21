@@ -19,6 +19,10 @@ use nrv\application\ports\api\UtilisateurServiceInterface;
 use nrv\application\ports\spi\UtilisateurRepository;
 use nrv\application\usecases\UtilisateurService;
 use nrv\adapters\persistence\PgUtilisateurRepository;
+use nrv\application\ports\api\AuthServiceInterface;
+use nrv\application\ports\spi\TokenProvider;
+use nrv\application\usecases\AuthService;
+use nrv\adapters\securite\JwtTokenProvider;
 
 /**
  * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
@@ -46,6 +50,12 @@ final class ContainerConfig
             UtilisateurServiceInterface::class => \DI\create(UtilisateurService::class)
                 ->constructor(\DI\get(UtilisateurRepository::class)),
 
+            AuthServiceInterface::class => \DI\create(AuthService::class)
+                ->constructor(\DI\get(UtilisateurRepository::class), \DI\get(TokenProvider::class)),
+
+            TokenProvider::class => function () {
+                return new JwtTokenProvider($_ENV['JWT_SECRET']);
+            },
             // ── adapters ─
             // connexion PDO unique, partagée par tous les repositories ; paramètres lus dans config/.env
             // ERRMODE_EXCEPTION : une erreur SQL lève une exception au lieu de renvoyer false
