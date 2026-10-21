@@ -39,8 +39,10 @@ L'API tourne sur http://localhost:7080 (routes détaillées dans [app/README.md]
 
 - Liste : `fetch('http://localhost:7080/spectacles')`, les données sont dans `data.spectacles`
 - Filtres : `fetch('http://localhost:7080/spectacles?' + new URLSearchParams({ style, date }))`
+- Soirées : `fetch('http://localhost:7080/soirees')`, les données sont dans `data.soirees` ;
+  chaque soirée contient `links.self.href` vers son détail
 - Détail : chaque spectacle de la liste contient `links.soiree.href` ;
-  la page `soiree.html?id=…` appelle `fetch('http://localhost:7080/soirees/' + id)`
+  la page `soiree.html?id=…` appelle `fetch('http://localhost:7080/soiree/' + id)`
   et lit la soirée dans `data.soiree`
 
 L'API autorise les requêtes venant du client (en-têtes CORS).
