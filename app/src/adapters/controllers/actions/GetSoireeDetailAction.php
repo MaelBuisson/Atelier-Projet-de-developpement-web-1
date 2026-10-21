@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Slim\Routing\RouteContext;
 
 /**
- * Adaptateur d'entrée : GET /soirees/{id}, détail d'une soirée avec ses tarifs et ses spectacles.
+ * Adaptateur d'entrée : GET /soiree/{id}, détail d'une soirée avec ses tarifs et ses spectacles.
  *
  * 200 : la soirée et ses liens HATEOAS
  * 400 : l'identifiant n'est pas un UUID

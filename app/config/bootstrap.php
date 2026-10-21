@@ -12,6 +12,7 @@ use nrv\adapters\controllers\actions\ListerSpectaclesAction;
 use nrv\adapters\controllers\actions\GetSoireeDetailAction;
 use nrv\adapters\controllers\actions\EnregistrerUtilisateurAction;
 use nrv\adapters\controllers\actions\ConnexionAction;
+use nrv\adapters\controllers\actions\ListerSoireesAction;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -44,6 +45,11 @@ $app->group('/spectacles', function (RouteCollectorProxy $group) {
 });
 
 $app->group('/soirees', function (RouteCollectorProxy $group) {
+    $group->get('', ListerSoireesAction::class)
+        ->setName('soirees-list');
+});
+
+$app->group('/soiree', function (RouteCollectorProxy $group) {
     $group->get('/{id}', GetSoireeDetailAction::class)
         ->setName('soiree-detail');
 });
