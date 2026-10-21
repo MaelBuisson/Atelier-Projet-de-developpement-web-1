@@ -3,6 +3,7 @@
 namespace nrv\application\ports\api;
 
 use nrv\application\dto\SoireeDetailDTO;
+use nrv\application\dto\SoireeDTO;
 use nrv\domain\exceptions\SoireeNotFound;
 
 /**
@@ -17,4 +18,11 @@ interface SoireeServiceInterface
      * @throws SoireeNotFound si aucune soirée ne porte cet identifiant
      */
     public function getSoireeDetail(string $id): SoireeDetailDTO;
+
+    /**
+     * Liste de toutes les soirées, triées par date puis par horaire.
+     *
+     * @return SoireeDTO[]
+     */
+    public function getAllSoirees(): array;
 }

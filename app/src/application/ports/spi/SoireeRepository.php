@@ -14,4 +14,9 @@ interface SoireeRepository
      * @throws SoireeNotFound si aucune soirée ne porte cet identifiant
      */
     public function findById(string $id): Soiree;
+
+    /**
+     * @return Soiree[] toutes les soirées, triées par date puis par horaire
+     */
+    public function findAll(): array;
 }
