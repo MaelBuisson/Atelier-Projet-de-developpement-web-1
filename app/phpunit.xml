@@ -5,11 +5,8 @@
          bootstrap="vendor/autoload.php"
          colors="true">
     <testsuites>
-        <testsuite name="domaine">
-            <directory suffix="Test.php">tests/pest/domaine</directory>
-        </testsuite>
-        <testsuite name="services">
-            <directory suffix="Test.php">tests/pest/services</directory>
+        <testsuite name="Pest">
+            <directory suffix="Test.php">tests/pest</directory>
         </testsuite>
     </testsuites>
     <source>

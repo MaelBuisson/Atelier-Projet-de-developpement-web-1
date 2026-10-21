@@ -9,7 +9,7 @@ use nrv\application\ports\api\UtilisateurServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class EnregistrerAction extends AbstractAction
+class EnregistrerUtilisateurAction extends AbstractAction
 {
     public function __construct(
         private UtilisateurServiceInterface $service

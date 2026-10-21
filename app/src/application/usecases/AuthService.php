@@ -5,7 +5,7 @@ namespace nrv\application\usecases;
 use nrv\application\dto\AuthDTO;
 use nrv\application\dto\ConnexionDTO;
 use nrv\application\dto\UtilisateurDTO;
-use nrv\application\exceptions\MauvausMdpOuEmailException;
+use nrv\application\exceptions\MauvaisMdpOuEmailException;
 use nrv\application\exceptions\ValidationException;
 use nrv\application\ports\api\AuthServiceInterface;
 use nrv\application\ports\spi\TokenProvider;
@@ -31,11 +31,11 @@ class AuthService implements AuthServiceInterface
 
         if ($utilisateur === null) {
             password_hash($dto->password, PASSWORD_DEFAULT);
-            throw new MauvausMdpOuEmailException("Email ou mot de passe incorrect.");
+            throw new MauvaisMdpOuEmailException("Email ou mot de passe incorrect.");
         }
         // On verifie que le mot de passe est correct
         if (!password_verify($dto->password, $utilisateur->getPasswordHash())) {
-            throw new MauvausMdpOuEmailException("Email ou mot de passe incorrect.");
+            throw new MauvaisMdpOuEmailException("Email ou mot de passe incorrect.");
         }
 
         // On retourne le token et les informations de l'utilisateur

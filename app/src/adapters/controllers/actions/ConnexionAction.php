@@ -3,7 +3,7 @@
 namespace nrv\adapters\controllers\actions;
 
 use nrv\application\dto\ConnexionDTO;
-use nrv\application\exceptions\MauvausMdpOuEmailException;
+use nrv\application\exceptions\MauvaisMdpOuEmailException;
 use nrv\application\exceptions\ValidationException;
 use nrv\application\ports\api\AuthServiceInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -27,7 +27,7 @@ class ConnexionAction extends AbstractAction
             return $this->json($rs, $this->service->connecter(ConnexionDTO::fromArray($data)));
         } catch (ValidationException $e) {
             return $this->json($rs, ['error' => $e->getMessage()], 400);
-        } catch (MauvausMdpOuEmailException $e) {
+        } catch (MauvaisMdpOuEmailException $e) {
             return $this->json($rs, ['error' => $e->getMessage()], 401);
         }
     }
