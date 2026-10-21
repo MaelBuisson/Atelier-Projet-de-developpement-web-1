@@ -14,8 +14,13 @@ final class EnregistrerUtilisateurDTO
 
     public static function fromArray(array $data): self
     {
-        $get = fn(string $key): string => is_string($data[$key] ?? null) ? trim($data[$key]) : '';
+        $texte = fn(string $key): string => is_string($data[$key] ?? null) ? trim($data[$key]) : '';
 
-        return new self($get('email'), $get('nom'), $get('prenom'), $get('password'));
+        return new self(
+            $texte('email'),
+            $texte('nom'),
+            $texte('prenom'),
+            is_string($data['password'] ?? null) ? $data['password'] : '' // jamais de trim
+        );
     }
 }
