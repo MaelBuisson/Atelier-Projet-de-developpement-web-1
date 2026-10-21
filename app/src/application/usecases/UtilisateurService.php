@@ -19,12 +19,15 @@ class UtilisateurService implements UtilisateurServiceInterface
     ) {
     }
 
+    // Fonction pour enregistrer un nouvel utilisateur
     public function enregistrer(EnregistrerUtilisateurDTO $dto): UtilisateurDTO
     {
+        // On vérifie que les données sont valides
         $this->validator->valider($dto);
 
         $email = strtolower($dto->email);
 
+        // On s'assure que l'email n'est pas déjà utilisé
         if ($this->repository->findByEmail($email) !== null) {
             throw new EmailDejaUtiliseException("Cet email est déjà utilisé.");
         }
