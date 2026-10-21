@@ -21,22 +21,30 @@
 
     <!-- Conteneur principal : Gère la mise en page en 2 colonnes sur ordinateur (via Flexbox) et empilée sur mobile -->
     <main class="soiree-container">
-        
-        <!-- Colonne de gauche : Informations globales de la soirée (reste fixe au scroll sur PC) -->
+        <!-- remplacé par le template ci-dessous une fois la soirée chargée (js/soiree.js) -->
+        <p class="chargement">Chargement de la soirée…</p>
+    </main>
+
+    <!-- Template Handlebars du détail : {{champ}} est remplacé par la donnée de l'API (texte échappé),
+         {{#each}} répète un bloc pour chaque élément, {{else}} s'affiche si la liste est vide -->
+    <script id="tpl-soiree" type="text/x-handlebars-template">
         <section class="soiree-info">
-            <h1>Soirée d'Ouverture : Légende du Rock</h1>
+            <h1>{{nom}}</h1>
             <ul class="info-list">
-                <li><strong>Thématique :</strong> Classic Rock</li>
-                <li><strong>Date et Horaire :</strong> 19 Octobre 2026 - 20h00</li>
-                <li><strong>Lieu :</strong> Zénith de Nancy</li>
+                <li><strong>Thématique :</strong> {{thematique}}</li>
+                <li><strong>Date et Horaire :</strong> {{dateLongue date}} - {{horaire}}</li>
+                <li><strong>Lieu :</strong> {{lieu}}</li>
             </ul>
 
             <!-- Zone d'action (Call-to-Action) et Tarification -->
             <div class="tarifs-box">
                 <!-- Regroupement des prix sous forme de "badges" visuels -->
                 <div class="tarifs-badges">
-                    <span class="tarif-badge">Tarif Normal : 35€</span>
-                    <span class="tarif-badge">Réduit : 25€</span>
+                    {{#each tarifs}}
+                        <span class="tarif-badge">{{nomTarif nom}} : {{prix prix}}</span>
+                    {{else}}
+                        <span class="tarif-badge">Billetterie bientôt ouverte</span>
+                    {{/each}}
                 </div>
 
                 <!-- Bouton d'ajout au panier aligné dynamiquement -->
@@ -46,46 +54,39 @@
             </div>
         </section>
 
-        <!-- Colonne de droite : Conteneur de la liste des spectacles de la soirée -->
         <section class="spectacles-list">
             <h2>Spectacles de la soirée</h2>
 
+            {{#each spectacles}}
             <!-- Composant "Détail du spectacle" : réutilisable pour l'injection dynamique de données -->
             <article class="spectacle-detail-card">
                 <!-- Faux lecteur vidéo (passe de haut en bas sur mobile, à gauche sur PC) -->
                 <div class="video-placeholder">
-                    [Espace Vidéo]
+                    {{#if video}}
+                        <video class="video" src="{{video}}" controls preload="none"></video>
+                    {{else}}
+                        <div class="video-placeholder">Vidéo bientôt disponible</div>
+                    {{/if}}
                 </div>
                 <!-- Informations spécifiques au spectacle -->
                 <div class="spectacle-info">
-                    <h3>The Rolling Stones Tribute</h3>
-                    <p class="style-badge">Style : Classic Rock</p>
-                    <p><strong>Artistes :</strong> Mick Clone, Keith Replica</p>
-                    <p class="description">
-                        Une reproduction fidèle du plus grand groupe de rock'n'roll au monde, retraçant leurs plus
-                        grands succès des années 60 et 70.
-                    </p>
+                    <h3>{{titre}}</h3>
+                    <p class="style-badge">Style : {{styleMusique}}</p>
+                    <p><strong>Artistes :</strong> {{join artistes}}</p>
+                    {{#if description}}
+                        <p class="description">{{description}}</p>
+                    {{/if}}
                 </div>
             </article>
-
-            <!-- Deuxième instance du composant pour valider la mise en page -->
-            <article class="spectacle-detail-card">
-                <div class="video-placeholder">
-                    [Espace Vidéo]
-                </div>
-                <div class="spectacle-info">
-                    <h3>Led Zeppelin Experience</h3>
-                    <p class="style-badge">Style : Hard Rock</p>
-                    <p><strong>Artistes :</strong> Jimmy Page 2, Robert Plant Jr.</p>
-                    <p class="description">
-                        Un voyage psychédélique et survolté à travers les riffs légendaires de Led Zeppelin.
-                    </p>
-                </div>
-            </article>
+            {{else}}
+                <p>La programmation de cette soirée sera bientôt annoncée.</p>
+            {{/each}}
             
         </section>
-    </main>
+    </script>
 
-    <script src="js/script.js"></script>
+    <!-- Handlebars doit être chargé avant le script de la page qui l'utilise -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+    <script src="js/soiree.js"></script>
 </body>
 </html>
