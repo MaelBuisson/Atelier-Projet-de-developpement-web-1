@@ -15,6 +15,10 @@ use nrv\application\ports\api\SoireeServiceInterface;
 use nrv\application\ports\spi\SoireeRepository;
 use nrv\application\ports\spi\TarifRepository;
 use nrv\application\usecases\SoireeService;
+use nrv\application\ports\api\UtilisateurServiceInterface;
+use nrv\application\ports\spi\UtilisateurRepository;
+use nrv\application\usecases\UtilisateurService;
+use nrv\adapters\persistence\PgUtilisateurRepository;
 
 /**
  * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
@@ -27,17 +31,20 @@ final class ContainerConfig
         $builder = new ContainerBuilder();
         $builder->addDefinitions([
 
-            // ── domain services ─
+                // ── domain services ─
             SpectacleServiceInterface::class => \DI\create(SpectacleService::class)
                 ->constructor(\DI\get(SpectacleRepository::class)),
 
-            // le service des soirées reçoit les trois ports SPI dont il a besoin (pas le PDO)
+                // le service des soirées reçoit les trois ports SPI dont il a besoin (pas le PDO)
             SoireeServiceInterface::class => \DI\create(SoireeService::class)
                 ->constructor(
                     \DI\get(SoireeRepository::class),
                     \DI\get(SpectacleRepository::class),
                     \DI\get(TarifRepository::class)
                 ),
+
+            UtilisateurServiceInterface::class => \DI\create(UtilisateurService::class)
+                ->constructor(\DI\get(UtilisateurRepository::class)),
 
             // ── adapters ─
             // connexion PDO unique, partagée par tous les repositories ; paramètres lus dans config/.env
@@ -56,6 +63,8 @@ final class ContainerConfig
                 ->constructor(\DI\get('nrv.pdo')),
 
             TarifRepository::class => \DI\create(PgTarifRepository::class)
+                ->constructor(\DI\get('nrv.pdo')),
+            UtilisateurRepository::class => \DI\create(PgUtilisateurRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
         ]);
         return $builder->build();

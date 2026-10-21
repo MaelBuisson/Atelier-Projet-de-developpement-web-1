@@ -10,6 +10,7 @@ use nrv\adapters\config\ContainerConfig;
 use nrv\adapters\controllers\middlewares\Cors;
 use nrv\adapters\controllers\actions\ListerSpectaclesAction;
 use nrv\adapters\controllers\actions\GetSoireeDetailAction;
+use nrv\adapters\controllers\actions\EnregistrerAction;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -44,6 +45,11 @@ $app->group('/spectacles', function (RouteCollectorProxy $group) {
 $app->group('/soirees', function (RouteCollectorProxy $group) {
     $group->get('/{id}', GetSoireeDetailAction::class)
         ->setName('soiree-detail');
+});
+
+$app->group('/auth', function (RouteCollectorProxy $group) {
+    $group->post('/register', EnregistrerAction::class)
+        ->setName('register');
 });
 
 // CORS : options pour les requêtes preflight
