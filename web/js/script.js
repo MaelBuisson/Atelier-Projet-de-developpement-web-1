@@ -1,47 +1,91 @@
 
-// le script s'exécute une fois le HTML chargé, pour que les cartes et les filtres existent
+const API = 'http://localhost:7080';
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    const cartesSpectacles = document.querySelectorAll('.spectacle-card');
+    const conteneurGrille = document.getElementById('spectacles');
+    const selectedStyle = document.getElementById('filter-style');
+    const selectedDate = document.getElementById('filter-date');
 
-    // clic sur une carte : ouverture de la page de détail de la soirée
-    cartesSpectacles.forEach(carte => {
-        carte.addEventListener('click', () => {
-            window.location.href = 'soiree.html'
-        })
-    })
+    if (conteneurGrille) {
 
+        async function chargerSpectacles() {
+            try {
 
-    // filtres de la liste : style de musique et date
-    const selectStyle = document.getElementById('filter-style');
-const selectDate = document.getElementById('filter-date');
+                const params = new URLSearchParams();
 
-// filtrage temporaire côté client, sur les attributs data-style et data-date des cartes,
-// en attendant que l'API fournisse les spectacles filtrés
-function filtrerCartes() {
-    const styleChoisi = selectStyle.value;
-    const dateChoisie = selectDate.value;
+                if (selectedStyle && selectedStyle.value !== '') {
+                    params.append('style', selectedStyle.value);
+                }
+                if (selectedDate && selectedStyle.value !== '') {
+                    params.append('date', selectedDate.value);
+                }
 
-    cartesSpectacles.forEach(carte => {
-        const styleCarte = carte.getAttribute('data-style');
-        const dateCarte = carte.getAttribute('data-date');
+                const queryString = params.toString();
+                const url = queryString ? `${API}/spectacles?${queryString}` : `${API}/spectacles`;
 
-        // 'tous' désactive le filtre correspondant
-        const correspondStyle = (styleChoisi === 'tous' || styleCarte === styleChoisi);
-        const correspondDate = (dateChoisie === 'tous' || dateCarte === dateChoisie);
+                const reponse = await fetch(url);
 
-        // une carte reste visible seulement si elle correspond aux deux filtres
-        if (correspondStyle && correspondDate) {
-            carte.style.display = '';
-        } else {
-            carte.style.display = 'none';
+                if (!reponse.ok) throw new Error(`Erreur HTTP: ${reponse.status}`);
+
+                const jsonResult = await reponse.json();
+
+                afficherSpectacles(jsonResult.spectacles);
+
+            } catch (erreur) {
+                console.error("Erreur lors du chargement des spectacles :", erreur);
+                conteneurGrille.innerHTML = `<p style="color: white;">Désolé, impossible de charger le programme pour le moment.</p>`;
+            }
         }
-    });
-}
 
+        function afficherSpectacles(spectacles) {
+            conteneurGrille.innerHTML = '';
 
-// le filtrage est relancé à chaque changement de sélection
-selectStyle.addEventListener('change', filtrerCartes);
-selectDate.addEventListener('change', filtrerCartes);
+            if (spectacles.length === 0) {
+                conteneurGrille.innerHTML = `<p style="color: white;">Aucun spectacle ne correspond à vos critères.</p>`;
+                return;
+            }
 
-})
+            spectacles.forEach(spectacle => {
+
+                const imageUrl = spectacle.image ? spectacle.image : 'https://picsum.photos/seed/nrv-default/400/300'
+
+                const carteHTML = `
+                    <article class="spectacle-card" data-id-soiree="${spectacle.idSoiree}">
+                        <div class="card-image">
+                            <img src="${imageUrl}" alt="${spectacle.titre}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-content">
+                            <h2>${spectacle.titre}</h2>
+                            <p>${spectacle.date} à ${spectacle.horaire}</p>
+                        </div>
+                    </article>
+                `;
+
+                conteneurGrille.insertAdjacentHTML('beforeend', carteHTML);
+            });
+
+            reactiverClicsSurCarte();
+        }
+
+        function reactiverClicsSurCarte() {
+            const cartes = document.querySelectorAll('.spectacle-card');
+
+            cartes.forEach(carte => {
+                carte.addEventListener('click', () => {
+
+                    const idSoiree = carte.getAttribute('data-id-soiree');
+
+                    window.location.href = `soiree.html?id=${idSoiree}`;
+                });
+            });
+        }
+
+        chargerSpectacles();
+
+        if (selectedStyle && selectedDate) {
+            selectedStyle.addEventListener('change', chargerSpectacles);
+            selectedDate.addEventListener('change', chargerSpectacles);
+        }
+    }
+});
