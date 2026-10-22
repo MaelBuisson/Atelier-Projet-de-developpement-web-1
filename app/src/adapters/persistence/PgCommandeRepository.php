@@ -27,7 +27,7 @@ class PgCommandeRepository implements CommandeRepository
             "SELECT c.id_commande, c.date_creation,
                     sdc.id_lignes, sdc.quantite,
                     so.id_soiree, so.nom AS soiree_nom, so.date AS soiree_date, so.thematique AS soiree_thematique,
-                    so.nb_places AS soiree_nb_places, so.horaires AS soiree_horaires, so.lieu AS soiree_lieu,
+                    so.nb_place AS nb_places, so.horaire AS soiree_horaires, so.lieu AS soiree_lieu,
                     t.nom AS tarif_nom, t.prix AS tarif_prix
              FROM commande c
              LEFT JOIN soiree_dans_commande sdc ON sdc.id_commande = c.id_commande
@@ -40,7 +40,7 @@ class PgCommandeRepository implements CommandeRepository
             'id_utilisateur' => $idUtilisateur,
             'statut' => CommandeStatus::PANIER->name, // 'PANIER'
         ]);
-        $rows = $stmt->fetchAll(this->pdo::FETCH_ASSOC);
+        $rows = $stmt->fetchAll($this->pdo::FETCH_ASSOC);
 
         if ($rows === []) {
             return null;
