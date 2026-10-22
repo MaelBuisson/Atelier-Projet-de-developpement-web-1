@@ -75,12 +75,15 @@ CREATE TABLE commande (
     id_utilisateur UUID          NOT NULL REFERENCES utilisateur (id_utilisateur)
 );
 
+-- ligne de commande (du panier) : identifiant propre pour pouvoir la supprimer,
+-- et une seule ligne par soirée et par tarif dans une commande (UNIQUE)
 CREATE TABLE soiree_dans_commande (
+    id_lignes   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     id_commande UUID        NOT NULL REFERENCES commande (id_commande),
     id_soiree   UUID        NOT NULL REFERENCES soiree (id_soiree),
     nom_tarif   VARCHAR(30) NOT NULL,
     quantite    INT         NOT NULL CHECK (quantite > 0),
-    PRIMARY KEY (id_commande, id_soiree, nom_tarif),
+    UNIQUE (id_commande, id_soiree, nom_tarif),
     FOREIGN KEY (id_soiree, nom_tarif) REFERENCES tarif (id_soiree, nom)
 );
 
