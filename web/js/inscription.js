@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Empêche la page de se recharger !
+            e.preventDefault();
 
             const nom = document.getElementById('nom').value;
             const prenom = document.getElementById('prenom').value;
@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
             successDiv.hidden = true;
 
             try {
-                // Remplacer "http://localhost:7080" par ta constante API si elle existe
                 const reponse = await fetch(`http://localhost:7080/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
