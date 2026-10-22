@@ -68,9 +68,12 @@ $app->group('/auth', function (RouteCollectorProxy $group) {
         ->setName('me')->add(AuthMiddleware::class);
 });
 
-$app->get('/panier', GetPanierAction::class)
-    ->add(AuthMiddleware::class)
-    ->setName('panier-get');
+// panier de l'utilisateur connecté : tout le groupe est protégé par le token
+$app->group('/panier', function (RouteCollectorProxy $group) {
+    $group->get('', GetPanierAction::class)
+        ->setName('panier-get');
+})->add(AuthMiddleware::class);
+
 // CORS : options pour les requêtes preflight
 $app->options('/{routes:.+}', function (Request $request, Response $response): Response {
     return $response;
