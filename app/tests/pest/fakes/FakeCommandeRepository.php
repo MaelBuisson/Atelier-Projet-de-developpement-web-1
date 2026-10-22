@@ -11,9 +11,20 @@ use nrv\domain\entities\CommandeStatus;
  */
 class FakeCommandeRepository implements CommandeRepository
 {
+    // nombre d'appels à save() : permet de vérifier qu'un use case enregistre (ou non) la commande
+    public int $saveCalls = 0;
+    // si renseignée, save() lève cette exception : simule une panne de la base de données
+    public ?\Throwable $saveThrows = null;
+
+    /** @var array<string, Commande> commandes indexées par id, comme la clé primaire en base */
+    private array $commandes = [];
+
     /** @param Commande[] $commandes */
-    public function __construct(private array $commandes = [])
+    public function __construct(array $commandes = [])
     {
+        foreach ($commandes as $commande) {
+            $this->commandes[$commande->getId()] = $commande;
+        }
     }
 
     // même contrat que PgCommandeRepository : la commande au statut PANIER de l'utilisateur, ou null
@@ -26,5 +37,16 @@ class FakeCommandeRepository implements CommandeRepository
             }
         }
         return null;
+    }
+
+    // comme l'upsert en base : ajoute la commande si son id est nouveau, la remplace sinon
+    public function save(Commande $commande): void
+    {
+        $this->saveCalls++;
+        if ($this->saveThrows !== null) {
+            throw $this->saveThrows;
+        }
+
+        $this->commandes[$commande->getId()] = $commande;
     }
 }
