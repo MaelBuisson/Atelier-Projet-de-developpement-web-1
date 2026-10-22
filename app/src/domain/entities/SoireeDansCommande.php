@@ -5,7 +5,7 @@ namespace nrv\domain\entities;
 use nrv\domain\exceptions\QuantiteInvalide;
 
 // Il s'agit d'une soirée dans une commande. Elle contient l'identifiant de la soirée, le tarif choisi et la quantité de billets.
-// C'est une ligne du panier : elle a son propre identifiant (colonne id_lignes), utilisé pour la supprimer.
+// C'est une ligne du panier : elle a son propre identifiant (colonne id_ligne), utilisé pour la supprimer.
 class SoireeDansCommande
 {
     private string $idLigne;

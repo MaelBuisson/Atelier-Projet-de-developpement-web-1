@@ -78,7 +78,7 @@ CREATE TABLE commande (
 -- ligne de commande (du panier) : identifiant propre pour pouvoir la supprimer,
 -- et une seule ligne par soirée et par tarif dans une commande (UNIQUE)
 CREATE TABLE soiree_dans_commande (
-    id_lignes   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_ligne    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     id_commande UUID        NOT NULL REFERENCES commande (id_commande),
     id_soiree   UUID        NOT NULL REFERENCES soiree (id_soiree),
     nom_tarif   VARCHAR(30) NOT NULL,

@@ -38,7 +38,7 @@ class PgCommandeRepository implements CommandeRepository
             'SELECT c.id_commande, c.date_creation,
                     u.id_utilisateur, u.email, u.nom AS utilisateur_nom, u.prenom AS utilisateur_prenom,
                     u.password AS utilisateur_password, u.role AS utilisateur_role,
-                    sdc.id_lignes, sdc.quantite,
+                    sdc.id_ligne, sdc.quantite,
                     so.id_soiree, so.nom AS soiree_nom, so.thematique AS soiree_thematique,
                     so.date AS soiree_date, so.horaire AS soiree_horaire,
                     so.lieu AS soiree_lieu, so.nb_place AS soiree_nb_place,
@@ -80,7 +80,7 @@ class PgCommandeRepository implements CommandeRepository
 
         foreach ($rows as $row) {
             // panier sans ligne : la rangée ne contient que la commande
-            if ($row['id_lignes'] === null) {
+            if ($row['id_ligne'] === null) {
                 continue;
             }
 
@@ -96,7 +96,7 @@ class PgCommandeRepository implements CommandeRepository
             );
 
             $commande->ajouterSoiree(new SoireeDansCommande(
-                $row['id_lignes'],
+                $row['id_ligne'],
                 $soirees[$row['id_soiree']],
                 new Tarif($row['tarif_nom'], (float) $row['tarif_prix']),
                 (int) $row['quantite']
