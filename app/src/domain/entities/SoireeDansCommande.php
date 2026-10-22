@@ -3,14 +3,17 @@
 namespace nrv\domain\entities;
 
 // Il s'agit d'une soirée dans une commande. Elle contient l'identifiant de la soirée, le tarif choisi et la quantité de billets.
+// C'est une ligne du panier : elle a son propre identifiant (colonne id_lignes), utilisé pour la supprimer.
 class SoireeDansCommande
 {
+    private string $idLignes;
     private Soiree $soiree;
     private Tarif $tarif;
     private int $quantite;
 
-    public function __construct(Soiree $soiree, Tarif $tarif, int $quantite)
+    public function __construct(string $idLignes, Soiree $soiree, Tarif $tarif, int $quantite)
     {
+        $this->idLignes = $idLignes;
         $this->soiree = $soiree;
         $this->tarif = $tarif;
         if ($quantite <= 0) {
@@ -20,6 +23,7 @@ class SoireeDansCommande
         }
     }
 
+    // sous-total de la ligne : prix du tarif × nombre de billets
     public function getMontant(): float
     {
         return $this->tarif->getPrix() * $this->quantite;
@@ -38,5 +42,26 @@ class SoireeDansCommande
     public function getTarif(): Tarif
     {
         return $this->tarif;
+    }
+
+    public function getIdLignes(): string
+    {
+        return $this->idLignes;
+    }
+
+    // ajoute des billets à la ligne (utilisé quand la même soirée et le même tarif sont ajoutés à nouveau)
+    public function addQuantite(int $n): void
+    {
+        if ($n > 0) {
+            $this->quantite += $n;
+        }
+    }
+
+    // retire un billet ; à 0, Commande::supprimerSoiree() retire la ligne du panier
+    public function decreaseQuantite(): void
+    {
+        if ($this->quantite!=0) {
+            $this->quantite--;
+        }
     }
 }
