@@ -313,3 +313,94 @@ main {
         }
     }
 }
+
+.auth-section {
+    background-color: $bg-card;
+    padding: 2rem;
+    border-radius: $radius-card;
+    max-width: 500px;
+    margin: 2rem auto;
+
+    h2 {
+        color: $color-primary;
+        margin-bottom: 1.5rem;
+    }
+
+    .message {
+        padding: 1rem;
+        border-radius: $radius-card;
+        margin-bottom: 1.5rem;
+        font-weight: bold;
+
+        &:not([hidden]) {
+            display: block;
+        }
+
+        &-error {
+            background-color: rgba(255, 0, 0, 0.1);
+            color: #d32f2f;
+            border: 1px solid #d32f2f;
+        }
+
+        &-success {
+            background-color: rgba(0, 128, 0, 0.1);
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
+        }
+    }
+
+    .nrv-form {
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+
+            label {
+                margin-bottom: 0.5rem;
+                color: $text-main;
+            }
+
+            input { 
+                padding: 0.75rem;
+                border: 1px solid rgba($text-main, 0.2);
+                border-radius: $radius-card;
+                background-color: transparent;
+                color: $text-main;
+
+                &:focus {
+                    outline: none;
+                    border-color: $color-primary;
+                }
+            }
+        }
+
+        .btn-primary {
+            background-color: $color-primary;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: $radius-card;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            width: 100%;
+            margin-top: 1rem;
+
+            &:hover {
+                background-color: darken($color-primary, 10%);
+            }
+
+            &:active {
+                transform: scale(0.98);
+            }
+
+            &:disabled {
+                background-color: grayscale($color-primary);
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+        }
+    }
+}
