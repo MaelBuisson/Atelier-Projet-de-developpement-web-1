@@ -5,15 +5,15 @@ namespace nrv\domain\entities;
 // Il s'agit d'une soirée dans une commande. Elle contient l'identifiant de la soirée, le tarif choisi et la quantité de billets.
 class SoireeDansCommande
 {
-    private string $idSoiree;
+    private Soiree $soiree;
     private Tarif $tarif;
     private int $quantite;
 
-    public function __construct(string $idSoiree, Tarif $tarif, int $quantite)
+    public function __construct(Soiree $soiree, Tarif $tarif, int $quantite)
     {
-        $this->idSoiree = $idSoiree;
+        $this->soiree = $soiree;
         $this->tarif = $tarif;
-        if ($quantite <= 1) {
+        if ($quantite <= 0) {
             throw new \InvalidArgumentException("La quantité doit être supérieure ou égale à 1.");
         } else {
             $this->quantite = $quantite;
@@ -25,9 +25,9 @@ class SoireeDansCommande
         return $this->tarif->getPrix() * $this->quantite;
     }
 
-    public function getIdSoiree(): string
+    public function getSoiree(): Soiree
     {
-        return $this->idSoiree;
+        return $this->soiree;
     }
 
     public function getQuantite(): int
