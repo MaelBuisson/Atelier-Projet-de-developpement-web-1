@@ -105,4 +105,90 @@ class PgCommandeRepository implements CommandeRepository
 
         return $commande;
     }
+
+    /**
+     * Enregistre la commande et ses lignes : insertion si elle est nouvelle, mise à jour sinon.
+     * Tout se fait dans une transaction : en cas d'erreur, la base reste dans son état précédent.
+     */
+    public function save(Commande $commande): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            // upsert : date et utilisateur ne changent jamais, seuls le statut et le montant sont mis à jour
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO commande (id_commande, date_creation, montant_total, statut, id_utilisateur)
+                VALUES (:id_commande, :date_creation, :montant_total, :statut, :id_utilisateur)
+                ON CONFLICT (id_commande)
+                DO UPDATE SET statut = EXCLUDED.statut, montant_total = EXCLUDED.montant_total
+                "
+            );
+            $stmt->execute([
+                'id_commande' => $commande->getId(),
+                'date_creation' => $commande->getDateCreation()->format('Y-m-d H:i:s'),
+                'montant_total' => $commande->getMontantTotal(),
+                'statut' => $commande->getStatus()->name,
+                'id_utilisateur' => $commande->getUtilisateur()->getId()
+            ]);
+
+            $sdcs = $commande->getSoireesDansCommande();
+
+            // suppression des lignes retirées du panier, AVANT les upserts : si une soirée/tarif est
+            // supprimée puis rajoutée avec un nouvel id, l'ancienne ligne bloquerait la contrainte UNIQUE.
+            // Panier vide : pas de NOT IN (NOT IN () est une erreur SQL), toutes les lignes sont supprimées.
+            $notIn = '';
+            $params = [$commande->getId()];
+
+            if ($sdcs) {
+                $ids = array_map(
+                    fn($sdc) => $sdc->getIdLigne(),
+                    $sdcs
+                );
+
+                // un ? par identifiant : une liste ne peut pas être liée à un seul paramètre
+                $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+
+                $notIn = "AND id_ligne NOT IN ($placeholders)";
+
+                $params = array_merge(
+                    $params,
+                    $ids
+                );
+            }
+
+            $stmt = $this->pdo->prepare(
+                "DELETE FROM soiree_dans_commande
+                WHERE id_commande = ? $notIn
+                "
+            );
+
+            $stmt->execute($params);
+
+            // upsert des lignes : requête préparée une seule fois, exécutée pour chaque ligne
+            if ($sdcs) {
+                $stmt = $this->pdo->prepare(
+                    'INSERT INTO soiree_dans_commande (id_ligne, id_commande, id_soiree, nom_tarif, quantite)
+                    VALUES (:id_ligne, :id_commande, :id_soiree, :nom_tarif, :quantite)
+                    ON CONFLICT (id_ligne)
+                    DO UPDATE SET quantite = EXCLUDED.quantite
+                    '
+                );
+
+                foreach ($sdcs as $sdc) {
+                    $stmt->execute([
+                        'id_ligne' => $sdc->getIdLigne(),
+                        'id_commande' => $commande->getId(),
+                        'id_soiree' => $sdc->getSoiree()->getId(),
+                        'nom_tarif' => $sdc->getTarif()->getNom(),
+                        'quantite' => $sdc->getQuantite()
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        $this->pdo->commit();
+    }
 }

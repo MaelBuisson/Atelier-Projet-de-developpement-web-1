@@ -14,4 +14,10 @@ interface CommandeRepository
      *                       ou null s'il n'en a pas encore
      */
     public function getPanier(string $idUtilisateur): ?Commande;
+
+    /**
+     * Crée la commande ou la met à jour (statut, montant total) avec ses lignes,
+     * en une seule transaction : les lignes retirées de l'objet sont supprimées.
+     */
+    public function save(Commande $commande): void;
 }
