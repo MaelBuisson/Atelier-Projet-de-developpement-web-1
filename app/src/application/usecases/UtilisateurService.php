@@ -45,4 +45,10 @@ class UtilisateurService implements UtilisateurServiceInterface
         return UtilisateurDTO::fromEntity($utilisateur);
     }
 
+    // l'entité devient un UtilisateurDTO : le hash du mot de passe ne sort pas de l'application ;
+    // UserNotFound n'est pas interceptée, l'action la traduit en 404
+    public function getUserById(string $id): UtilisateurDTO
+    {
+        return UtilisateurDTO::fromEntity($this->repository->findById($id));
+    }
 }

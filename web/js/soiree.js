@@ -57,7 +57,7 @@ async function chargerSoiree() {
 
     try {
         // encodeURIComponent : l'id vient de l'URL, il ne doit pas pouvoir modifier l'adresse appelée
-        const response = await fetch(`${API}/soirees/${encodeURIComponent(id)}`)
+        const response = await fetch(`${API}/soiree/${encodeURIComponent(id)}`)
 
         // 404 : soirée inconnue ; 400 : identifiant qui n'est pas un UUID
         if(response.status === 404 || response.status === 400) {

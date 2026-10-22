@@ -6,6 +6,7 @@ use nrv\application\exceptions\ValidationException;
 use nrv\application\usecases\UtilisateurService;
 use nrv\application\validators\EnregistrerUtilisateurValidator;
 use nrv\domain\entities\Utilisateur;
+use nrv\domain\exceptions\UserNotFound;
 use tests\pest\fakes\FakeUtilisateurRepository;
 
 function dtoPourService(array $o = []): EnregistrerUtilisateurDTO
@@ -218,3 +219,38 @@ it('peut enregistrer beaucoup d\'utilisateurs de suite', function () {
 
     expect($this->repo->utilisateurs)->toHaveCount(50);
 });
+
+// ── lecture d'un utilisateur par son identifiant (getUserById, route GET /auth/me) ─
+
+it("retourne le DTO de l'utilisateur correspondant à l'identifiant", function () {
+    $cree = $this->service->enregistrer(dtoPourService());
+
+    $lu = $this->service->getUserById($cree->id);
+
+    expect($lu->id)->toBe($cree->id)
+        ->and($lu->email)->toBe('jean.dupont@mail.fr')
+        ->and($lu->nom)->toBe('Dupont')
+        ->and($lu->prenom)->toBe('Jean')
+        ->and($lu->role)->toBe(Utilisateur::ROLE_CLIENT);
+});
+
+it('retrouve le bon utilisateur parmi plusieurs', function () {
+    $this->service->enregistrer(dtoPourService(['email' => 'premier@mail.fr']));
+    $second = $this->service->enregistrer(dtoPourService(['email' => 'second@mail.fr']));
+    $this->service->enregistrer(dtoPourService(['email' => 'troisieme@mail.fr']));
+
+    expect($this->service->getUserById($second->id)->email)->toBe('second@mail.fr');
+});
+
+it("ne renvoie jamais le mot de passe de l'utilisateur lu", function () {
+    $cree = $this->service->enregistrer(dtoPourService(['password' => 'motdepasse123']));
+
+    $json = json_encode($this->service->getUserById($cree->id));
+
+    expect($json)->not->toContain('password')
+        ->and($json)->not->toContain('motdepasse123');
+});
+
+it("lève UserNotFound si l'utilisateur n'existe pas", function () {
+    $this->service->getUserById('99999999-9999-4999-8999-999999999999');
+})->throws(UserNotFound::class, 'Utilisateur introuvable');

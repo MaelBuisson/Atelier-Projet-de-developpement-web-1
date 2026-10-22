@@ -24,6 +24,8 @@ use nrv\application\ports\spi\TokenProvider;
 use nrv\application\usecases\AuthService;
 use nrv\adapters\securite\JwtTokenProvider;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
+use nrv\application\validators\EnregistrerUtilisateurValidator;
+
 /**
  * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
  * (interface) à son implémentation. Les actions et les services ne reçoivent que des interfaces.
@@ -48,7 +50,7 @@ final class ContainerConfig
                 ),
 
             UtilisateurServiceInterface::class => \DI\create(UtilisateurService::class)
-                ->constructor(\DI\get(UtilisateurRepository::class)),
+                ->constructor(\DI\get(UtilisateurRepository::class), \DI\create(EnregistrerUtilisateurValidator::class)),
 
             AuthServiceInterface::class => \DI\create(AuthService::class)
                 ->constructor(\DI\get(UtilisateurRepository::class), \DI\get(TokenProvider::class)),

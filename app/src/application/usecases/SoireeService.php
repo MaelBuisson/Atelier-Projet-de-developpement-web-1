@@ -3,6 +3,7 @@
 namespace nrv\application\usecases;
 
 use nrv\application\dto\SoireeDetailDTO;
+use nrv\application\dto\SoireeDTO;
 use nrv\application\ports\api\SoireeServiceInterface;
 use nrv\application\ports\spi\SoireeRepository;
 use nrv\application\ports\spi\SpectacleRepository;
@@ -10,8 +11,10 @@ use nrv\application\ports\spi\TarifRepository;
 use Override;
 
 /**
- * Use case « détail d'une soirée » : réunit la soirée, ses spectacles et ses tarifs,
- * lus via les trois ports SPI, dans un SoireeDetailDTO.
+ * Use cases des soirées :
+ * - « détail d'une soirée » : réunit la soirée, ses spectacles et ses tarifs,
+ *   lus via les trois ports SPI, dans un SoireeDetailDTO ;
+ * - « liste des soirées » : toutes les soirées, en SoireeDTO.
  */
 class SoireeService implements SoireeServiceInterface
 {
@@ -40,5 +43,17 @@ class SoireeService implements SoireeServiceInterface
         $tarifs = $this->tarifRepository->findBySoiree($id);
 
         return SoireeDetailDTO::fromEntities($soiree, $spectacles, $tarifs);
+    }
+
+    /**
+     * Use case « liste des soirées » : chaque entité devient un SoireeDTO (sans spectacles ni tarifs).
+     */
+    #[Override]
+    public function getAllSoirees(): array
+    {
+        return array_map(
+            fn($s) => SoireeDTO::fromEntity($s),
+            $this->soireeRepository->findAll()
+        );
     }
 }

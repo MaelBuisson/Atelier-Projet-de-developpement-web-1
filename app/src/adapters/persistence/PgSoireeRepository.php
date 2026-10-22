@@ -43,14 +43,48 @@ class PgSoireeRepository implements SoireeRepository
             throw new SoireeNotFound($id);
         }
 
+        return $this->toSoiree($soireeData);
+    }
+
+    /**
+     * Retourne toutes les soirées, triées par date puis par horaire.
+     *
+     * @return Soiree[]
+     */
+    public function findAll(): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT *
+            FROM soiree
+            ORDER BY date, horaire
+            '
+        );
+
+        $stmt->execute();
+
+        $soirees = [];
+
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $soirees[] = $this->toSoiree($row);
+        }
+
+        return $soirees;
+    }
+
+    /**
+     * Construit une entité Soiree à partir d'une ligne de la table soiree.
+     * La colonne horaire (TIME) est lue avec '!H:i:s' : la date est fixée au 1970-01-01.
+     */
+    private function toSoiree(array $row): Soiree
+    {
         return new Soiree(
-            $soireeData['id_soiree'],
-            $soireeData['nom'],
-            $soireeData['thematique'],
-            new DateTimeImmutable($soireeData['date']),
-            DateTimeImmutable::createFromFormat('!H:i:s', $soireeData['horaire']),
-            $soireeData['lieu'],
-            (int) $soireeData['nb_place']
+            $row['id_soiree'],
+            $row['nom'],
+            $row['thematique'],
+            new DateTimeImmutable($row['date']),
+            DateTimeImmutable::createFromFormat('!H:i:s', $row['horaire']),
+            $row['lieu'],
+            (int) $row['nb_place']
         );
     }
 }

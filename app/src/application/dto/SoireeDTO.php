@@ -16,8 +16,7 @@ final readonly class SoireeDTO implements \JsonSerializable
         public string $thematique,
         public string $date,
         public string $horaire,
-        public string $lieu,
-        public int $nbPlace
+        public string $lieu
     ) {
     }
 
@@ -30,8 +29,7 @@ final readonly class SoireeDTO implements \JsonSerializable
             $s->getThematique(),
             $s->getDate()->format('Y-m-d'),
             $s->getHoraire()->format('H:i'),
-            $s->getLieu(),
-            $s->getNbPlace()
+            $s->getLieu()
         );
     }
 
@@ -44,8 +42,7 @@ final readonly class SoireeDTO implements \JsonSerializable
             'thematique' => $this->thematique,
             'date' => $this->date,
             'horaire' => $this->horaire,
-            'lieu' => $this->lieu,
-            'nbPlace' => $this->nbPlace //a' changer: nbPlace restant et pas total 
+            'lieu' => $this->lieu 
         ];
     }
 }

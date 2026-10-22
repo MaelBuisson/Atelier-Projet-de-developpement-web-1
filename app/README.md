@@ -11,7 +11,8 @@ Elle retourne du JSON avec des liens HATEOAS et s'exécute dans le conteneur `ap
 | GET     | `/spectacles`                        | liste des spectacles : titre, date, horaire, image, lien vers la soirée |
 | GET     | `/spectacles?style=Metal`            | filtrée par style de musique (sans tenir compte des majuscules) |
 | GET     | `/spectacles?date=2027-07-09`        | filtrée par date de soirée (format `AAAA-MM-JJ`) |
-| GET     | `/soirees/{id}`                      | détail d'une soirée : tarifs, spectacles, artistes |
+| GET     | `/soirees`                           | liste des soirées triées par date : nom, thématique, date, horaire, lieu, lien vers le détail |
+| GET     | `/soiree/{id}`                       | détail d'une soirée : tarifs, spectacles, artistes |
 
 Les filtres se combinent : `/spectacles?style=Punk&date=2027-07-10`.
 
@@ -29,7 +30,7 @@ Chaque réponse contient les données et leurs liens :
       "horaire": "20:00",
       "image": "https://picsum.photos/seed/nrv-rolling-thunder-1/400/300",
       "idSoiree": "10000000-0000-4000-8000-000000000001",
-      "links": { "soiree": { "href": "/soirees/10000000-0000-4000-8000-000000000001" } }
+      "links": { "soiree": { "href": "/soiree/10000000-0000-4000-8000-000000000001" } }
     }
   ],
   "links": { "self": { "href": "/spectacles" } }
