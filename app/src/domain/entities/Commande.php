@@ -44,22 +44,22 @@ class Commande
             throw new \LogicException("La commande ne peut être modifiée que si elle est dans le panier.");
         }
 
-        if (!isset($this->soireesDansCommande[$soiree->getIdLignes()])) {
+        if (!isset($this->soireesDansCommande[$soiree->getIdLigne()])) {
             // recherche d'une ligne existante pour la même soirée et le même tarif
             foreach ($this->soireesDansCommande as $sdc) {
                 if($sdc->getSoiree()->getId().$sdc->getTarif()->getNom() === $soiree->getSoiree()->getId().$soiree->getTarif()->getNom()){
-                    $this->soireesDansCommande[$sdc->getIdLignes()]->addQuantite($soiree->getQuantite());
+                    $this->soireesDansCommande[$sdc->getIdLigne()]->addQuantite($soiree->getQuantite());
 
                     return;
                 }
             }
 
             // aucune ligne équivalente : nouvelle ligne
-            $this->soireesDansCommande[$soiree->getIdLignes()] = $soiree;
+            $this->soireesDansCommande[$soiree->getIdLigne()] = $soiree;
         }
         else {
             // même identifiant de ligne : on ajoute la quantité
-            $this->soireesDansCommande[$soiree->getIdLignes()]->addQuantite($soiree->getQuantite());
+            $this->soireesDansCommande[$soiree->getIdLigne()]->addQuantite($soiree->getQuantite());
             
         }
     }
@@ -70,21 +70,21 @@ class Commande
      * @throws \LogicException si la commande n'est plus un panier
      * @throws SoireeDansCommandeNotFound si le panier ne contient pas cette ligne
      */
-    public function supprimerSoiree(string $idLignes): void
+    public function supprimerSoiree(string $idLigne): void
     {
         if ($this->status !== CommandeStatus::PANIER) {
             throw new \LogicException("La commande ne peut être modifiée que si elle est dans le panier.");
         }
 
-        if(isset($this->soireesDansCommande[$idLignes])) {
-            $this->soireesDansCommande[$idLignes]->decreaseQuantite();
-            if ($this->soireesDansCommande[$idLignes]->getQuantite()==0) {
-                unset($this->soireesDansCommande[$idLignes]);
+        if(isset($this->soireesDansCommande[$idLigne])) {
+            $this->soireesDansCommande[$idLigne]->decreaseQuantite();
+            if ($this->soireesDansCommande[$idLigne]->getQuantite()==0) {
+                unset($this->soireesDansCommande[$idLigne]);
             }
             return;
         }
         
-        throw new SoireeDansCommandeNotFound($idLignes);
+        throw new SoireeDansCommandeNotFound($idLigne);
     }
 
     /**

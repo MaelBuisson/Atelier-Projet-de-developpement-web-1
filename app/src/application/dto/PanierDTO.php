@@ -24,7 +24,7 @@ final class PanierDTO implements \JsonSerializable
     {
         $lignes = array_map(
             fn(SoireeDansCommande $l) => [
-                'idLigne' => $l->getIdLignes(),
+                'idLigne' => $l->getIdLigne(),
                 'idSoiree' => $l->getSoiree()->getId(),
                 'nomSoiree' => $l->getSoiree()->getNom(),
                 'tarif' => $l->getTarif()->getNom(),

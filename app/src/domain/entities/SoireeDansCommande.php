@@ -6,14 +6,14 @@ namespace nrv\domain\entities;
 // C'est une ligne du panier : elle a son propre identifiant (colonne id_lignes), utilisé pour la supprimer.
 class SoireeDansCommande
 {
-    private string $idLignes;
+    private string $idLigne;
     private Soiree $soiree;
     private Tarif $tarif;
     private int $quantite;
 
-    public function __construct(string $idLignes, Soiree $soiree, Tarif $tarif, int $quantite)
+    public function __construct(string $idLigne, Soiree $soiree, Tarif $tarif, int $quantite)
     {
-        $this->idLignes = $idLignes;
+        $this->idLigne = $idLigne;
         $this->soiree = $soiree;
         $this->tarif = $tarif;
         if ($quantite <= 0) {
@@ -44,9 +44,9 @@ class SoireeDansCommande
         return $this->tarif;
     }
 
-    public function getIdLignes(): string
+    public function getIdLigne(): string
     {
-        return $this->idLignes;
+        return $this->idLigne;
     }
 
     // ajoute des billets à la ligne (utilisé quand la même soirée et le même tarif sont ajoutés à nouveau)

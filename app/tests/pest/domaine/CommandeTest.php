@@ -74,7 +74,7 @@ it('fusionne deux ajouts de la même soirée au même tarif', function () {
     expect($lignes)->toHaveCount(1)
         ->and($lignes[0]->getQuantite())->toBe(4)
         // la ligne déjà présente est conservée, avec son identifiant
-        ->and($lignes[0]->getIdLignes())->toBe('L1')
+        ->and($lignes[0]->getIdLigne())->toBe('L1')
         ->and($this->commande->getMontantTotal())->toBe(140.0);
 });
 
