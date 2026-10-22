@@ -24,29 +24,110 @@ body {
 // ==========================================
 .main-header {
     // Utilisation de Flexbox pour aligner le logo à gauche et la navigation à droite
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $gap-standard;
-    background-color: $bg-card;
+    padding: 1.5rem 2rem;
+    background-color: #121212;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .burger-menu {
+        display: none;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 2rem;
+        height: 2rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        z-index: 100; // Au-dessus du menu
+
+        .burger-line {
+            width: 100%;
+            height: 3px;
+            background-color: #ffffff;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            transform-origin: left;
+        }
+    }
 
     // Imbrication SASS pour isoler le style de la navigation
     nav {
         display: flex;
-        gap: 1.5rem;
+        align-items: center;
+        gap: 2rem;
 
         a {
-            color: $text-main;
+            color: #ffffff;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
             transition: color 0.3s ease; // Animation douce au survol
 
             &:hover {
                 color: $color-primary;
             }
         }
+
+        .btn-primary {
+            background-color: $color-primary;
+            padding: 0.5rem 1.2rem;
+            border-radius: $radius-card; // Ta variable d'arrondi
+            color: #ffffff;
+            
+            &:hover {
+                background-color: darken($color-primary, 10%);
+                color: #ffffff;
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        .burger-menu {
+            display: flex; // Affiche le burger
+        }
+
+        nav {
+            position: absolute;
+            top: 100%; // Juste sous le header
+            left: 0;
+            width: 100%;
+            background-color: #121212;
+            flex-direction: column; // Empile les liens
+            padding: 2rem;
+            gap: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            
+            // Masqué par défaut (décalé vers le haut et invisible)
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none; // Désactive les clics quand masqué
+            transition: all 0.3s ease;
+            z-index: 99;
+
+            // Apparaît quand le JS ajoute la classe "active"
+            &.active {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .btn-primary {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .burger-menu.active {
+            .burger-line:nth-child(1) { transform: rotate(45deg); }
+            .burger-line:nth-child(2) { opacity: 0; }
+            .burger-line:nth-child(3) { transform: rotate(-45deg); }
+        }
     }
 }
+    
+
 
 // ==========================================
 // 3. LAYOUT PAGE D'ACCUEIL (Filtres + Grille)
@@ -65,34 +146,30 @@ main {
 }
 
 .filters-section {
-    background-color: $bg-card;
+    padding: 2rem;
+    background-color: #1a1a1a; 
     border-radius: $radius-card;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin: $gap-standard;
-
-    // Fixe la largeur du panneau latéral sur grand écran
-    @include tablet-up {
-        width: 250px;
-        flex-shrink: 0; // Empêche l'écrasement de la barre de filtres
-    }
+    height: fit-content; 
 
     .filter-select {
-        background-color: transparent;
-        color: $color-primary;
-        border: 2px solid $color-primary;
-        padding: 0.75rem;
-        border-radius: $radius-card;
-        font-weight: bold;
-        cursor: pointer;
         width: 100%;
+        padding: 0.8rem;
+        margin-bottom: 1.5rem;
+        background-color: transparent;
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2); 
+        border-radius: 4px;
+        cursor: pointer;
         outline: none;
-        
+        transition: border-color 0.3s ease;
+
+        &:focus {
+            border-color: $color-primary; 
+        }
+
         option {
-            background-color: $bg-card;
-            color: $text-main;
+            background-color: #1a1a1a; 
+            color: #ffffff;
         }
     }
 }
@@ -400,6 +477,126 @@ main {
                 background-color: grayscale($color-primary);
                 cursor: not-allowed;
                 opacity: 0.7;
+            }
+        }
+    }
+}
+
+.panier-section {
+    padding: 2rem;
+    max-width: 1000px; 
+    margin: 0 auto;
+    
+    h2 {
+        color: #ffffff;
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+    }
+
+    h3 {
+        color: #ffffff;
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    
+    .panier-layout {
+        display: grid;
+        grid-template-columns: 1fr; 
+        gap: 3rem;
+        background-color: $bg-card; 
+        padding: 2rem;
+        border-radius: $radius-card;
+
+        
+        @include tablet-up { 
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+    }
+
+    /* --- GAUCHE : BILLETS --- */
+    .panier-gauche {
+        .liste-billets {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1.5rem;
+        }
+
+        .billet-item {
+            display: flex;
+            justify-content: space-between;
+            color: $text-secondary;
+            font-size: 1rem;
+        }
+
+        .resume-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            
+            .total-label, .total-montant {
+                font-size: 1.25rem;
+                font-weight: bold;
+                color: #ffffff;
+            }
+        }
+    }
+
+    /* --- DROITE : PAIEMENT --- */
+    .panier-droite {
+        .form-paiement {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+
+            input {
+                width: 100%;
+                padding: 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                background-color: transparent;
+                color: #ffffff;
+                font-size: 1rem;
+
+                &::placeholder {
+                    color: rgba(255, 255, 255, 0.4);
+                }
+
+                &:focus {
+                    outline: none;
+                    border-color: $color-primary;
+                }
+            }
+
+            .form-row {
+                display: flex;
+                gap: 1rem;
+
+                input {
+                    flex: 1; 
+                }
+            }
+
+            .btn-payer {
+                background-color: #2b5cff;
+                color: #ffffff;
+                padding: 1rem;
+                font-size: 1.1rem;
+                margin-top: 1rem;
+                width: 100%;
+                border-radius: 8px;
+                border: none;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                
+                &:hover {
+                    background-color: darken(#2b5cff, 10%);
+                }
             }
         }
     }

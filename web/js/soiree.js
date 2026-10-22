@@ -81,3 +81,18 @@ async function chargerSoiree() {
 }
 
 chargerSoiree();
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Gestion du menu burger
+    const burgerBtn = document.getElementById('burger-btn');
+    const mainNav = document.getElementById('main-nav');
+
+    if (burgerBtn && mainNav) {
+        burgerBtn.addEventListener('click', () => {
+            // Ajoute ou retire la classe "active" sur le bouton et le menu
+            burgerBtn.classList.toggle('active');
+            mainNav.classList.toggle('active');
+        });
+    }
+});

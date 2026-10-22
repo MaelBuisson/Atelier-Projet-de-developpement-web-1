@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexion</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <section class="auth-section">
+    <h2>Connexion</h2>
+    
+    <div id="login-error" class="message message-error" hidden></div>
+
+    <form id="login-form" class="nrv-form">
+        <div class="form-group">
+            <label for="login-email">Email :</label>
+            <input type="email" id="login-email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="login-password">Mot de passe :</label>
+            <input type="password" id="login-password" required>
+        </div>
+
+        <button type="submit" class="btn-primary">Se connecter</button>
+    </form>
+</section>
+
+<script src="js/connexion.js"></script>
+</body>
+</html>
