@@ -2,7 +2,6 @@
 
 namespace nrv\adapters\persistence;
 
-use DateTime;
 use DateTimeImmutable;
 use PDO;
 use nrv\application\ports\spi\CommandeRepository;

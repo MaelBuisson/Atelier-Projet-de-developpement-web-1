@@ -6,15 +6,14 @@ use DateTimeImmutable;
 use nrv\application\dto\PanierDTO;
 use nrv\application\ports\api\CommandeServiceInterface;
 use nrv\application\ports\spi\CommandeRepository;
-use nrv\application\ports\spi\UtilisateurRepository;
 use nrv\domain\entities\Commande;
 use Ramsey\Uuid\Uuid;
+use nrv\domain\entities\Utilisateur;
 
 class CommandeService implements CommandeServiceInterface
 {
     public function __construct(
         private readonly CommandeRepository $commandeRepository,
-        private readonly UtilisateurRepository $utilisateurRepository
     ) {
     }
 
@@ -22,7 +21,11 @@ class CommandeService implements CommandeServiceInterface
     {
         $commande = $this->commandeRepository->getPanier($idUtilisateur);
         if ($commande === null) {
-            throw new \RuntimeException("Aucun panier trouvé pour l'utilisateur $idUtilisateur");
+            $commande = new Commande(
+                Uuid::uuid4()->toString(),
+                new DateTimeImmutable(),
+                new Utilisateur($idUtilisateur, '', '', '', '')
+            );
         }
         return PanierDTO::fromEntity($commande);
     }

@@ -25,7 +25,10 @@ use nrv\application\usecases\AuthService;
 use nrv\adapters\securite\JwtTokenProvider;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
 use nrv\application\validators\EnregistrerUtilisateurValidator;
-
+use nrv\application\ports\api\CommandeServiceInterface;
+use nrv\application\ports\spi\CommandeRepository;
+use nrv\application\usecases\CommandeService;
+use nrv\adapters\persistence\PgCommandeRepository;
 /**
  * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
  * (interface) à son implémentation. Les actions et les services ne reçoivent que des interfaces.
@@ -55,6 +58,10 @@ final class ContainerConfig
             AuthServiceInterface::class => \DI\create(AuthService::class)
                 ->constructor(\DI\get(UtilisateurRepository::class), \DI\get(TokenProvider::class)),
 
+            CommandeServiceInterface::class => \DI\create(CommandeService::class)
+                ->constructor(\DI\get(CommandeRepository::class)),
+
+
             AuthMiddleware::class => function (ContainerInterface $c) {
                 return new AuthMiddleware($_ENV['JWT_SECRET'], new \Slim\Psr7\Factory\ResponseFactory());
             },
@@ -81,6 +88,8 @@ final class ContainerConfig
             TarifRepository::class => \DI\create(PgTarifRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
             UtilisateurRepository::class => \DI\create(PgUtilisateurRepository::class)
+                ->constructor(\DI\get('nrv.pdo')),
+            CommandeRepository::class => \DI\create(PgCommandeRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
         ]);
         return $builder->build();
