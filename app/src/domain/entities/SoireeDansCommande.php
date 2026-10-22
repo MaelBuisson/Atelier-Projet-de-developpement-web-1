@@ -2,6 +2,8 @@
 
 namespace nrv\domain\entities;
 
+use nrv\domain\exceptions\QuantiteInvalide;
+
 // Il s'agit d'une soirée dans une commande. Elle contient l'identifiant de la soirée, le tarif choisi et la quantité de billets.
 // C'est une ligne du panier : elle a son propre identifiant (colonne id_lignes), utilisé pour la supprimer.
 class SoireeDansCommande
@@ -17,7 +19,7 @@ class SoireeDansCommande
         $this->soiree = $soiree;
         $this->tarif = $tarif;
         if ($quantite <= 0) {
-            throw new \InvalidArgumentException("La quantité doit être supérieure ou égale à 1.");
+            throw new QuantiteInvalide($quantite);
         } else {
             $this->quantite = $quantite;
         }

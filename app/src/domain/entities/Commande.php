@@ -2,8 +2,11 @@
 
 namespace nrv\domain\entities;
 
-use nrv\domain\exceptions\SoireeDansCommandeNotFound;
+use nrv\domain\exceptions\CommandeNonModifiable;
+use nrv\domain\exceptions\CommandeNonPayable;
+use nrv\domain\exceptions\CommandeNonValidable;
 use nrv\domain\exceptions\PanierVide;
+use nrv\domain\exceptions\SoireeDansCommandeNotFound;
 use DateTimeImmutable;
 
 /**
@@ -36,12 +39,12 @@ class Commande
      * à cette ligne (qui garde son identifiant) : une seule ligne par couple soirée + tarif,
      * comme l'impose la contrainte UNIQUE de la table soiree_dans_commande.
      *
-     * @throws \LogicException si la commande n'est plus un panier
+     * @throws CommandeNonModifiable si la commande n'est plus un panier
      */
     public function ajouterSoiree(SoireeDansCommande $soiree): void
     {
         if ($this->status !== CommandeStatus::PANIER) {
-            throw new \LogicException("La commande ne peut être modifiée que si elle est dans le panier.");
+            throw new CommandeNonModifiable($this->status);
         }
 
         if (!isset($this->soireesDansCommande[$soiree->getIdLigne()])) {
@@ -67,13 +70,13 @@ class Commande
     /**
      * Retire un billet de la ligne ; la ligne disparaît du panier quand elle n'a plus de billet.
      *
-     * @throws \LogicException si la commande n'est plus un panier
+     * @throws CommandeNonModifiable si la commande n'est plus un panier
      * @throws SoireeDansCommandeNotFound si le panier ne contient pas cette ligne
      */
     public function supprimerSoiree(string $idLigne): void
     {
         if ($this->status !== CommandeStatus::PANIER) {
-            throw new \LogicException("La commande ne peut être modifiée que si elle est dans le panier.");
+            throw new CommandeNonModifiable($this->status);
         }
 
         if(isset($this->soireesDansCommande[$idLigne])) {
@@ -92,13 +95,13 @@ class Commande
      * Les vérifications sont faites avant le changement de statut : en cas de refus,
      * la commande reste un panier.
      *
-     * @throws \LogicException si la commande n'est plus un panier
+     * @throws CommandeNonValidable si la commande n'est plus un panier
      * @throws PanierVide si le panier ne contient aucune ligne
      */
     public function valider(): void
     {
         if ($this->status !== CommandeStatus::PANIER) {
-            throw new \LogicException("La commande ne peut être validée que si elle est dans le panier.");
+            throw new CommandeNonValidable($this->status);
         }
 
         if ($this->soireesDansCommande === []) {
@@ -110,12 +113,12 @@ class Commande
     /**
      * Marque la commande comme payée (paiement simulé).
      *
-     * @throws \LogicException si la commande n'a pas été validée
+     * @throws CommandeNonPayable si la commande n'a pas été validée
      */
     public function payer(): void
     {
         if ($this->status !== CommandeStatus::VALIDEE) {
-            throw new \LogicException("La commande ne peut être payée que si elle est validée.");
+            throw new CommandeNonPayable($this->status);
         }
         $this->status = CommandeStatus::PAYEE;
     }

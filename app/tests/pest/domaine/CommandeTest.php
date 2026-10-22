@@ -10,8 +10,12 @@ use nrv\domain\entities\CommandeStatus;
 use nrv\domain\entities\SoireeDansCommande;
 use nrv\domain\entities\Tarif;
 use nrv\domain\entities\Utilisateur;
-use nrv\domain\exceptions\SoireeDansCommandeNotFound;
+use nrv\domain\exceptions\CommandeNonModifiable;
+use nrv\domain\exceptions\CommandeNonPayable;
+use nrv\domain\exceptions\CommandeNonValidable;
 use nrv\domain\exceptions\PanierVide;
+use nrv\domain\exceptions\QuantiteInvalide;
+use nrv\domain\exceptions\SoireeDansCommandeNotFound;
 
 beforeEach(function () {
     $this->commande = new Commande(
@@ -115,7 +119,7 @@ it('retourne les lignes sous forme de liste (0, 1, 2…) pour le JSON', function
 
 it('refuse une ligne de quantité nulle ou négative', function (int $quantite) {
     lignePanier('L1', $this->rock, $this->normal, $quantite);
-})->with([0, -1])->throws(InvalidArgumentException::class);
+})->with([0, -1])->throws(QuantiteInvalide::class, 'La quantité doit être supérieure ou égale à 1');
 
 // ── suppression ─
 
@@ -175,27 +179,46 @@ it("refuse un ajout une fois la commande validée", function () {
     $this->commande->valider();
 
     $this->commande->ajouterSoiree(lignePanier('L2', $this->rock, $this->reduit, 1));
-})->throws(LogicException::class);
+})->throws(CommandeNonModifiable::class, 'statut actuel : VALIDEE');
 
 it("refuse une suppression une fois la commande validée", function () {
     $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 2));
     $this->commande->valider();
 
     $this->commande->supprimerSoiree('L1');
-})->throws(LogicException::class);
+})->throws(CommandeNonModifiable::class);
 
 it('refuse de valider deux fois la même commande', function () {
     $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 2));
     $this->commande->valider();
 
     $this->commande->valider();
-})->throws(LogicException::class);
+})->throws(CommandeNonValidable::class);
 
 it("refuse le paiement d'une commande qui n'est pas validée", function () {
     $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 1));
 
     $this->commande->payer();
-})->throws(LogicException::class);
+})->throws(CommandeNonPayable::class, 'statut actuel : PANIER');
+
+it('refuse de payer deux fois la même commande', function () {
+    $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 1));
+    $this->commande->valider();
+    $this->commande->payer();
+
+    $this->commande->payer();
+})->throws(CommandeNonPayable::class, 'statut actuel : PAYEE');
+
+it('donne le code HTTP adapté à chaque exception du panier', function () {
+    $statut = CommandeStatus::VALIDEE;
+
+    expect((new CommandeNonModifiable($statut))->getCode())->toBe(409)
+        ->and((new CommandeNonValidable($statut))->getCode())->toBe(409)
+        ->and((new CommandeNonPayable($statut))->getCode())->toBe(409)
+        ->and((new PanierVide())->getCode())->toBe(409)
+        ->and((new QuantiteInvalide(0))->getCode())->toBe(400)
+        ->and((new SoireeDansCommandeNotFound('L1'))->getCode())->toBe(404);
+});
 
 it('refuse la validation d\'un panier vide', function () {
     $this->commande->valider();
