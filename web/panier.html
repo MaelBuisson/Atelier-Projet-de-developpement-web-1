@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panier</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <section class="panier-section">
+    <h2>Mon Panier</h2>
+    
+    <div id="message-panier" class="message message-error" hidden></div>
+
+    <div class="panier-contenu">
+        <div id="liste-billets" class="liste-billets">
+            <p>Votre panier est actuellement vide.</p>
+        </div>
+
+        <aside class="panier-resume">
+            <h3>Résumé</h3>
+            <div class="resume-ligne">
+                <span>Nombre de billets :</span>
+                <span id="total-billets">0</span>
+            </div>
+            <div class="resume-ligne total">
+                <span>Total à payer :</span>
+                <span><span id="total-prix">0</span> €</span>
+            </div>
+            <button id="btn-valider-commande" class="btn-primary" disabled>Valider la commande</button>
+        </aside>
+    </div>
+</section>
+</body>
+</html>
