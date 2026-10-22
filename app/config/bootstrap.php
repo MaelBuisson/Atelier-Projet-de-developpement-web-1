@@ -12,7 +12,9 @@ use nrv\adapters\controllers\actions\ListerSpectaclesAction;
 use nrv\adapters\controllers\actions\GetSoireeDetailAction;
 use nrv\adapters\controllers\actions\EnregistrerUtilisateurAction;
 use nrv\adapters\controllers\actions\ConnexionAction;
+use nrv\adapters\controllers\actions\GetUtilisateurAction;
 use nrv\adapters\controllers\actions\ListerSoireesAction;
+use nrv\adapters\controllers\middlewares\AuthMiddleware;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -59,6 +61,10 @@ $app->group('/auth', function (RouteCollectorProxy $group) {
         ->setName('register');
     $group->post('/signin', ConnexionAction::class)
         ->setName('signin');
+    // route protégée : le middleware est ajouté à cette route seulement,
+    // register et signin restent accessibles sans token
+    $group->get('/me', GetUtilisateurAction::class)
+        ->setName('me')->add(AuthMiddleware::class);
 });
 
 // CORS : options pour les requêtes preflight

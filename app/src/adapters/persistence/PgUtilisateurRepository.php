@@ -4,6 +4,8 @@ namespace nrv\adapters\persistence;
 
 use nrv\application\ports\spi\UtilisateurRepository;
 use nrv\domain\entities\Utilisateur;
+use nrv\domain\exceptions\UserNotFound;
+use Override;
 
 class PgUtilisateurRepository implements UtilisateurRepository
 {
@@ -25,14 +27,7 @@ class PgUtilisateurRepository implements UtilisateurRepository
             return null;
         }
 
-        return new Utilisateur(
-            $row['id_utilisateur'],
-            $row['email'],
-            $row['nom'],
-            $row['prenom'],
-            $row['password'],
-            (int) $row['role']
-        );
+        return $this->toUtilisateur($row);
     }
 
     // Fonction pour enregistrer un nouvel utilisateur
@@ -50,5 +45,43 @@ class PgUtilisateurRepository implements UtilisateurRepository
             'password' => $u->getPasswordHash(),
             'role' => $u->getRole(),
         ]);
+    }
+
+    /**
+     * Retourne l'utilisateur correspondant à l'identifiant (UUID, issu du token JWT).
+     *
+     * @throws UserNotFound si aucun utilisateur ne porte cet identifiant
+     */
+    #[Override]
+    public function findById(string $id): Utilisateur
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT *
+            FROM utilisateur
+            WHERE id_utilisateur = :id
+            '
+        );
+
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($row === false) {
+            throw new UserNotFound();
+        }
+
+        return $this->toUtilisateur($row);
+    }
+
+    // construit l'entité à partir d'une ligne de la table utilisateur (partagé par findByEmail et findById)
+    private function toUtilisateur(array $row): Utilisateur
+    {
+        return new Utilisateur(
+            $row['id_utilisateur'],
+            $row['email'],
+            $row['nom'],
+            $row['prenom'],
+            $row['password'],
+            (int) $row['role']
+        );
     }
 }
