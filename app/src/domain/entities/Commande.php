@@ -5,8 +5,9 @@ namespace nrv\domain\entities;
 use DateTimeImmutable;
 
 /**
- * Artiste (ou groupe) se produisant dans un ou plusieurs spectacles.
- * Le prénom est facultatif : un groupe n'a qu'un nom.
+ * Il s'agit d'une Commande, qui peut contenir plusieurs soirées.
+ * Chaque commande est associée à un utilisateur.
+ * Elle passe par différents statuts : PANIER, VALIDEE, PAYEE.
  */
 class Commande
 {
@@ -27,12 +28,18 @@ class Commande
 
     public function ajouterSoiree(SoireeDansCommande $soiree): void
     {
+        if ($this->status !== CommandeStatus::PANIER) {
+            throw new \LogicException("La commande ne peut être modifiée que si elle est dans le panier.");
+        }
         $this->soireesDansCommande[] = $soiree;
         $this->montantTotal += $soiree->getMontant();
     }
 
     public function supprimerSoiree(string $idSoiree): void
     {
+        if ($this->status !== CommandeStatus::PANIER) {
+            throw new \LogicException("La commande ne peut être modifiée que si elle est dans le panier.");
+        }
         foreach ($this->soireesDansCommande as $index => $soiree) {
             if ($soiree->getIdSoiree() === $idSoiree) {
                 $this->montantTotal -= $soiree->getMontant();

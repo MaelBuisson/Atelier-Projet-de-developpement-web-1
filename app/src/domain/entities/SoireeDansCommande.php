@@ -2,6 +2,7 @@
 
 namespace nrv\domain\entities;
 
+// Il s'agit d'une soirée dans une commande. Elle contient l'identifiant de la soirée, le tarif choisi et la quantité de billets.
 class SoireeDansCommande
 {
     private string $idSoiree;
