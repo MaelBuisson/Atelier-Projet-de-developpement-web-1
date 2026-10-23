@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Impression de vos billets - NRV</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #eeeeee; 
+            padding: 2rem; 
+            color: #000; 
+        }
+        .no-print { 
+            text-align: center; 
+            margin-bottom: 2rem; 
+        }
+        .btn-print { 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            font-weight: bold;
+            cursor: pointer; 
+            background: #ff4757; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+        }
+        
+        #billets-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .billet {
+            background: #ffffff;
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem; 
+            page-break-inside: avoid;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .billet-info {
+            flex: 1; 
+            min-width: 250px;
+        }
+        .billet-info h2 { 
+            margin: 0 0 0.5rem 0; 
+            color: #ff4757; 
+            font-size: 1.8rem;
+            text-transform: uppercase;
+        }
+        .billet-info h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            color: #222;
+        }
+        .billet-info p { 
+            margin: 0.25rem 0; 
+            font-size: 1rem;
+        }
+        
+        .billet-code {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            overflow: hidden; 
+        }
+
+        .billet-code img {
+            max-width: 100%; 
+            height: auto;
+            max-height: 90px;
+            object-fit: contain;
+        }
+        
+        
+        @media print {
+            body { background: #ffffff; padding: 0; }
+            .no-print { display: none; }
+            #billets-container { gap: 1rem; }
+            .billet { 
+                border: 2px solid #000; 
+                box-shadow: none; 
+                margin-bottom: 1rem; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ Lancer l'impression</button>
+    </div>
+
+    <div id="billets-container">
+        <p style="text-align: center;">Génération de vos billets en cours...</p>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/billet.js"></script>
+</body>
+</html>

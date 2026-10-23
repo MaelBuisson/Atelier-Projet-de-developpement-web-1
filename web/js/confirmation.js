@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         numCommandeElement.style.color = "#ff4757"
     }
 
-    const btnImprimer = document.addEventListener('btn-imprimer');
+    const btnImprimer = document.getElementById('btn-imprimer');
     if (btnImprimer) {
         btnImprimer.addEventListener('click', () => {
             if (idCommande) {
