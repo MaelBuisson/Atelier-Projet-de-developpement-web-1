@@ -36,10 +36,9 @@ $app = AppFactory::createFromContainer($container);
 
 // ── ajout middlewares ─
 $app->addBodyParsingMiddleware();
-$app->add(Cors::class);
 $app->addRoutingMiddleware();
 // détail des erreurs internes affiché uniquement si DISPLAY_ERROR_DETAILS=true dans config/.env (développement)
-$displayErrorDetails = filter_var($_ENV['DISPLAY_ERROR_DETAILS'] ?? false, FILTER_VALIDATE_BOOL);
+$displayErrorDetails = true;
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
 $errorHandler = $errorMiddleware->getDefaultErrorHandler();
 $errorHandler->forceContentType('application/json');
@@ -50,7 +49,7 @@ $errorHandler->registerErrorRenderer('application/json', function ($exception, $
 
     return json_encode(['message' => $visible ? $exception->getMessage() : 'Erreur interne du serveur']);
 });
-
+$app->add(Cors::class);
 // ── ajout des routes ─
 $app->group('/spectacles', function (RouteCollectorProxy $group) {
     $group->get('', ListerSpectaclesAction::class)

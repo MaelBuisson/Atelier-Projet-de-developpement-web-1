@@ -14,23 +14,28 @@ class Cors
 {
     public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // méthodes autorisées sur la route demandée (disponibles car le routing middleware s'exécute avant)
-        $routeContext = RouteContext::fromRequest($request);
-        $routingResults = $routeContext->getRoutingResults();
-        $methods = $routingResults->getAllowedMethods();
-        $requestHeaders = $request->getHeaderLine('Access-Control-Request-Headers');
-
         // on renvoie l'origine du client plutôt que '*' : obligatoire avec Allow-Credentials
         $origin = $request->hasHeader('Origin') ? $request->getHeaderLine('Origin') : '*';
+        $requestHeaders = $request->getHeaderLine('Access-Control-Request-Headers') ?: 'Content-Type, Authorization, X-Requested-With';
 
-        // la requête est d'abord traitée, puis les en-têtes CORS sont ajoutés à la réponse
+        // Tente de récupérer les méthodes autorisées si le routing a fonctionné
+        try {
+            $routeContext = RouteContext::fromRequest($request);
+            $routingResults = $routeContext->getRoutingResults();
+            $methods = $routingResults->getAllowedMethods();
+        } catch (\Throwable $e) {
+            $methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'];
+        }
+
+        $allowedMethods = !empty($methods) ? implode(',', $methods) : 'GET, POST, PUT, DELETE, PATCH, OPTIONS';
+
+        // Traitement de la requête par la suite de l'application
         $response = $handler->handle($request);
 
         return $response
             ->withHeader('Access-Control-Allow-Origin', $origin)
             ->withHeader('Access-Control-Allow-Headers', $requestHeaders)
-            ->withHeader('Access-Control-Allow-Methods', implode(',', $methods))
+            ->withHeader('Access-Control-Allow-Methods', $allowedMethods)
             ->withHeader('Access-Control-Allow-Credentials', 'true');
     }
-
 }
