@@ -168,8 +168,22 @@ btnValider.addEventListener('click', async () => {
             if (btnVider) btnVider.disabled = false;
             return;
         }
+        
 
-        const idCommande = data.commande.idCommande;
+        console.log("Données reçues à la validation :", data);
+       
+        const idCommande = data.idCommande 
+                        || data.id 
+                        || (data.commande && (data.commande.idCommande || data.commande.id));
+                        
+        if (!idCommande) {
+            console.error("Impossible de trouver l'ID dans :", data);
+            afficherMessage("Erreur interne : l'identifiant de la commande est manquant.");
+            btnValider.disabled = false;
+            return;
+        }
+
+        // 4. Redirection avec le bon ID
         window.location.href = `paiement.html?id=${encodeURIComponent(idCommande)}`;
     } catch (e) {
         console.error(e);
