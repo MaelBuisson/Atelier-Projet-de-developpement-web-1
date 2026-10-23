@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginError.hidden = true;
 
             try {
-                const response = await fetch(`http://localhost:7080/auth/signin`, {
+                const response = await fetch(`${API}/auth/signin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    localStorage.setItem('nrv_token', data.token);
+                    localStorage.setItem(TOKEN_KEY, data.token);
 
                     window.location.href = 'index.html';
                 } else {

@@ -1,6 +1,3 @@
-
-const API = 'http://localhost:7080';
-
 document.addEventListener('DOMContentLoaded', () => {
 
     const conteneurGrille = document.getElementById('spectacles');

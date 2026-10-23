@@ -1,8 +1,5 @@
 // Page soiree.html : détail d'une soirée, chargé depuis l'API et affiché avec un template Handlebars
 
-// adresse de l'API : à changer uniquement ici pour docketu
-const API = 'http://localhost:7080';
-
 // ── helpers Handlebars : mise en forme des données renvoyées par l'API ─
 
 // "2027-07-08" → "jeudi 8 juillet 2027" ; T12:00 évite un décalage de jour dû au fuseau horaire

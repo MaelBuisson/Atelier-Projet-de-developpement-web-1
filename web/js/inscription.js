@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             successDiv.hidden = true;
 
             try {
-                const reponse = await fetch(`http://localhost:7080/auth/register`, {
+                const reponse = await fetch(`${API}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, nom, prenom, password })
