@@ -92,8 +92,32 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
+    // 1. Récupération des valeurs
+    const numero = document.getElementById('cb-numero').value.trim();
+    const dateExpiration = document.getElementById('cb-date').value.trim();
+    const cvc = document.getElementById('cb-cvc').value.trim();
+
+   
+    const numeroNettoye = numero.replace(/\s/g, '');
+    if (!/^\d{16}$/.test(numeroNettoye)) {
+        afficherMessage("Le numéro de carte doit contenir 16 chiffres.");
+        return;
+    }
+
+    
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(dateExpiration)) {
+        afficherMessage("La date d'expiration doit être au format MM/AA (ex: 12/25).");
+        return;
+    }
+
+    
+    if (!/^\d{3}$/.test(cvc)) {
+        afficherMessage("Le cryptogramme (CVC) doit contenir 3 chiffres.");
+        return;
+    }
+
     message.hidden = true;
-    btnPayer.disabled = true; // évite le double paiement
+    btnPayer.disabled = true; 
 
     try {
         const response = await fetch(`${API}/commandes/${encodeURIComponent(idCommande)}/paiement`, {
@@ -102,11 +126,10 @@ form.addEventListener('submit', async (e) => {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
-            // ⚠ clés supposées : vérifie PayerCommandeAction / son validator
             body: JSON.stringify({
-                numero: document.getElementById('cb-numero').value.trim(),
-                dateExpiration: document.getElementById('cb-date').value.trim(),
-                cvc: document.getElementById('cb-cvc').value.trim(),
+                numero: numeroNettoye, 
+                dateExpiration: dateExpiration,
+                cvc: cvc,
             }),
         });
 
@@ -124,7 +147,9 @@ form.addEventListener('submit', async (e) => {
             return;
         }
 
+        
         window.location.href = `confirmation.html?id=${encodeURIComponent(idCommande)}`;
+        
     } catch (err) {
         console.error(err);
         afficherMessage('Impossible de joindre le serveur API.');
