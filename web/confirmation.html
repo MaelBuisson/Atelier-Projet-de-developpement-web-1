@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commande confirmée - NRV</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">NRV</div>
+        <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </button>
+        <nav id="main-nav">
+            <a href="index.html">Programme</a>
+            <a href="panier.html">Panier (0)</a>
+            <a href="inscription.html" class="btn-primary">S'inscrire</a>
+            <a href="connexion.html" class="btn-primary">Se connecter</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="confirmation-section">
+            <div class="confirmation-card">
+                <div class="icon-success">✅</div>
+                <h2>Paiement réussi !</h2>
+                <p>Merci pour votre commande. Vos billets sont réservés et vous recevrez un email de confirmation sous peu.</p>
+                
+                <div class="commande-details">
+                    <span>Numéro de commande :</span>
+                    <strong id="num-commande">Chargement...</strong>
+                </div>
+
+                <button id="btn-imprimer" class="btn-action">🎫 Imprimer mes billets</button>
+
+                <a href="index.html" class="btn-action">Retour au programme</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/confirmation.js"></script>
+</body>
+</html>
