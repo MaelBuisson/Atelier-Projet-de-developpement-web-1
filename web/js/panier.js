@@ -4,7 +4,6 @@ const listeBillets = document.getElementById('liste-billets');
 const totalPrix = document.getElementById('total-prix');
 const message = document.getElementById('message-panier');
 const btnPayer = document.getElementById('btn-payer');
-const navPanier = document.getElementById('nav-panier');
 
 const formatPrix = (prix) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(prix);
@@ -57,7 +56,6 @@ function afficherPanier(panier) {
     }
 
     totalPrix.textContent = formatPrix(panier.montantTotal);
-    navPanier.textContent = `Panier (${panier.nbBillets})`;
 }
 
 async function chargerPanier() {
@@ -81,7 +79,8 @@ async function chargerPanier() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        afficherPanier(await response.json());
+        const data = await response.json();
+        afficherPanier(data.panier);
     } catch (e) {
         console.error(e);
         afficherMessage('Impossible de charger votre panier, réessayez plus tard.');

@@ -36,20 +36,11 @@
         <div class="panier-gauche">
             <h3>Vos billets</h3>
             
-            <div id="liste-billets" class="liste-billets">
-                <div class="billet-item">
-                    <span>2x Soirée Métal (Normal)</span>
-                    <span>70.00 €</span>
-                </div>
-                <div class="billet-item">
-                    <span>1x Soirée Blues (Réduit)</span>
-                    <span>25.00 €</span>
-                </div>
-            </div>
-            
+            <div id="liste-billets" class="liste-billets"></div>
+
             <div class="resume-total">
                 <span class="total-label">Total</span>
-                <span class="total-montant" id="total-prix">95.00 €</span>
+                <span class="total-montant" id="total-prix">0,00 €</span>
             </div>
         </div>
 
@@ -65,7 +56,7 @@
                     <input type="text" id="cb-cvc" placeholder="CVC" required>
                 </div>
 
-                <button type="submit" id="btn-payer" class="btn-payer">Payer 95.00 €</button>
+                <button type="submit" id="btn-payer" class="btn-payer" disabled>Payer</button>
             </form>
         </div>
     </div>
@@ -73,6 +64,7 @@
 
 </main>
 <script src="js/config.js"></script>
+<script src="js/script.js"></script>
 <script src="js/panier.js"></script>
 </body>
 </html>
