@@ -2,7 +2,6 @@
 
 namespace nrv\adapters\persistence;
 
-use DateTime;
 use DateTimeImmutable;
 use nrv\application\ports\spi\BilletRepository;
 use nrv\domain\entities\Billet;
@@ -25,7 +24,7 @@ class PgBilletRepository implements BilletRepository
                     u.id_utilisateur, u.nom AS user_nom, u.prenom AS user_prenom,
                     s.id_soiree, s.nom AS soiree_nom, s.date AS soiree_date,
                     s.horaire AS soiree_horaire, s.lieu AS soiree_lieu,
-                    s.thematique AS soiree_thematique, nb_place AS soiree_nb,
+                    s.thematique AS soiree_thematique, s.nb_place AS soiree_nb,
                     t.nom AS tarif_nom, t.prix AS tarif_prix
              FROM billet b
              JOIN commande c ON c.id_commande = b.id_commande
@@ -41,6 +40,39 @@ class PgBilletRepository implements BilletRepository
             throw new BilletNotFoundException($token);
         }
 
+        return $this->creerBillet($row);
+    }
+
+    /** @return Billet[] */
+    public function getBilletsByCommandePayee(string $idCommande, string $idUtilisateur): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT b.token, b.id_commande,
+                    u.id_utilisateur, u.nom AS user_nom, u.prenom AS user_prenom,
+                    s.id_soiree, s.nom AS soiree_nom, s.date AS soiree_date,
+                    s.horaire AS soiree_horaire, s.lieu AS soiree_lieu,
+                    s.thematique AS soiree_thematique, s.nb_place AS soiree_nb,
+                    t.nom AS tarif_nom, t.prix AS tarif_prix
+             FROM billet b
+             JOIN commande c ON c.id_commande = b.id_commande
+             JOIN utilisateur u ON u.id_utilisateur = c.id_utilisateur
+             JOIN soiree s ON s.id_soiree = b.id_soiree
+             JOIN tarif t ON t.id_soiree = b.id_soiree AND t.nom = b.nom_tarif
+             WHERE b.id_commande = :idCommande
+               AND c.id_utilisateur = :idUtilisateur
+               AND c.statut = 'payee'
+             ORDER BY s.date, b.token"
+        );
+        $stmt->execute(['idCommande' => $idCommande, 'idUtilisateur' => $idUtilisateur]);
+
+        return array_map(
+            fn(array $row) => $this->creerBillet($row),
+            $stmt->fetchAll(PDO::FETCH_ASSOC)
+        );
+    }
+
+    private function creerBillet(array $row): Billet
+    {
         $soiree = new Soiree(
             $row['id_soiree'],
             $row['soiree_nom'],
