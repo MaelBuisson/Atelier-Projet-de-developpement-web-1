@@ -4,6 +4,7 @@ namespace nrv\adapters\persistence;
 
 use nrv\application\ports\spi\TarifRepository;
 use nrv\domain\entities\Tarif;
+use nrv\domain\exceptions\TarifNotFound;
 use Override;
 use PDO;
 
@@ -26,7 +27,6 @@ class PgTarifRepository implements TarifRepository
      *
      * @return Tarif[]
      */
-    #[Override]
     public function findBySoiree(string $idSoiree): array
     {
         $stmt = $this->pdo->prepare(
@@ -45,5 +45,27 @@ class PgTarifRepository implements TarifRepository
         }
 
         return $tarifs;
+    }
+
+    /**
+     * Le tarif de la soirée portant ce nom : la clé primaire (id_soiree, nom) garantit au plus une ligne.
+     */
+    public function findBySoireeNom(string $idSoiree, string $nom): Tarif
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT nom, prix
+            FROM tarif
+            WHERE id_soiree = :id AND nom = :nom
+            '
+        );
+        $stmt->execute(['id' => $idSoiree, 'nom' => $nom]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            throw new TarifNotFound("$nom (soirée $idSoiree)");
+        }
+
+        return new Tarif($row['nom'], (float) $row['prix']);
     }
 }
