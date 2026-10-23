@@ -45,10 +45,12 @@ class ValiderPanierAction extends AbstractAction
         // les réponses PSR-7 sont immuables : withHeader() renvoie une nouvelle réponse, à réaffecter
         $rs = $rs->withHeader('Location', $url);
 
+        // étape suivante proposée au client : le paiement de la commande
         return $this->json($rs, [
             'commande' => $commande,
             'links' => [
                 'self' => ['href' => $url],
+                'paiement' => ['href' => $routeParser->urlFor('commande-paiement', ['id' => $commande->id])],
             ],
         ], 201);
     }

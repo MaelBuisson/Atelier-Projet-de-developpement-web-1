@@ -3,6 +3,7 @@
 namespace nrv\adapters\controllers\actions;
 
 use nrv\application\ports\api\CommandeServiceInterface;
+use nrv\domain\entities\CommandeStatus;
 use nrv\domain\exceptions\CommandeNotFound;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,7 +14,7 @@ use Slim\Routing\RouteContext;
  * Adaptateur d'entrée : GET /commandes/{id}, une commande de l'utilisateur connecté (quel que soit son statut).
  * Route protégée par AuthMiddleware : seule une commande de l'utilisateur du token est renvoyée.
  *
- * 200 : la commande et ses liens
+ * 200 : la commande et ses liens (paiement si elle est validée)
  * 400 : identifiant qui n'est pas un UUID
  * 401 : token absent, invalide ou expiré (réponse du middleware)
  * 404 : commande inexistante ou appartenant à un autre utilisateur
@@ -47,11 +48,15 @@ class GetCommandeAction extends AbstractAction
 
         $routeParser = RouteContext::fromRequest($rq)->getRouteParser();
 
+        // liens selon le statut : ce que le client peut faire ensuite
+        $links = ['self' => ['href' => $routeParser->urlFor('commande-detail', ['id' => $id])]];
+        if ($commande->statut === CommandeStatus::VALIDEE->name) {
+            $links['paiement'] = ['href' => $routeParser->urlFor('commande-paiement', ['id' => $id])];
+        }
+
         return $this->json($rs, [
             'commande' => $commande,
-            'links' => [
-                'self' => ['href' => $routeParser->urlFor('commande-detail', ['id' => $id])],
-            ],
+            'links' => $links,
         ]);
     }
 }
