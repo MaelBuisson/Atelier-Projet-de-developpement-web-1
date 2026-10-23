@@ -1,16 +1,21 @@
 <?php
 
 /*
- * Tests des use cases du panier (CommandeService) : voir son panier, ajouter et retirer des billets.
+ * Tests des use cases du panier et des commandes (CommandeService) : voir son panier,
+ * ajouter et retirer des billets, valider le panier et consulter une commande.
  * Les repositories sont remplacés par des fakes : le service ne dépend que des ports SPI.
  */
 
+use nrv\application\dto\CommandeDTO;
 use nrv\application\dto\PanierDTO;
 use nrv\application\usecases\CommandeService;
 use nrv\domain\entities\Commande;
+use nrv\domain\entities\CommandeStatus;
 use nrv\domain\entities\SoireeDansCommande;
 use nrv\domain\entities\Tarif;
 use nrv\domain\entities\Utilisateur;
+use nrv\domain\exceptions\CommandeNotFound;
+use nrv\domain\exceptions\PanierVide;
 use nrv\domain\exceptions\QuantiteInvalide;
 use nrv\domain\exceptions\SoireeDansCommandeNotFound;
 use nrv\domain\exceptions\SoireeNotFound;
@@ -193,3 +198,72 @@ it("ne permet pas de retirer la ligne du panier d'un autre utilisateur", functio
     expect($this->commandes->saveCalls)->toBe(0)
         ->and($panierJean->getSoireesDansCommande()[0]->getQuantite())->toBe(2);
 });
+
+// ── valider ─
+
+it('valide le panier : la commande devient VALIDEE et est enregistrée', function () {
+    $commande = $this->service->valider('utilisateur-jean');
+
+    expect($commande)->toBeInstanceOf(CommandeDTO::class)
+        ->and($commande->id)->toBe('commande-jean')
+        ->and($commande->statut)->toBe('VALIDEE')
+        ->and(array_column($commande->lignes, 'idLigne'))->toBe(['L1', 'L2'])
+        ->and($commande->montantTotal)->toBe(95.0)
+        ->and($this->commandes->saveCalls)->toBe(1)
+        ->and($this->commandes->findById('commande-jean')->getStatus())->toBe(CommandeStatus::VALIDEE);
+});
+
+it("après la validation, l'utilisateur a un nouveau panier vide", function () {
+    $this->service->valider('utilisateur-jean');
+
+    expect($this->service->getPanier('utilisateur-jean')->lignes)->toBe([]);
+});
+
+it("un ajout après la validation crée un nouveau panier sans toucher la commande validée", function () {
+    $this->service->valider('utilisateur-jean');
+
+    $panier = $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-metal', 'normal', 1);
+    $validee = $this->commandes->findById('commande-jean');
+
+    expect($panier->lignes)->toHaveCount(1)
+        ->and($panier->montantTotal)->toBe(50.0)
+        ->and($validee->getSoireesDansCommande())->toHaveCount(2)
+        ->and($validee->getMontantTotal())->toBe(95.0);
+});
+
+it("lève PanierVide si l'utilisateur n'a pas de panier, sans rien enregistrer", function () {
+    expect(fn () => $this->service->valider('utilisateur-marie'))->toThrow(PanierVide::class);
+
+    expect($this->commandes->saveCalls)->toBe(0);
+});
+
+it('lève PanierVide si le panier ne contient aucune ligne, sans rien enregistrer', function () {
+    // Marie a un panier enregistré mais vide (ses billets ont été retirés)
+    $this->commandes->save(new Commande('commande-marie', new DateTimeImmutable(), $this->marie));
+    $this->commandes->saveCalls = 0;
+
+    expect(fn () => $this->service->valider('utilisateur-marie'))->toThrow(PanierVide::class);
+
+    expect($this->commandes->saveCalls)->toBe(0)
+        ->and($this->commandes->findById('commande-marie')->getStatus())->toBe(CommandeStatus::PANIER);
+});
+
+// ── getCommande ─
+
+it("retourne une commande de l'utilisateur, quel que soit son statut", function () {
+    $this->service->valider('utilisateur-jean');
+
+    $commande = $this->service->getCommande('utilisateur-jean', 'commande-jean');
+
+    expect($commande->statut)->toBe('VALIDEE')
+        ->and($commande->nbBillets)->toBe(3);
+});
+
+it('lève CommandeNotFound pour une commande inexistante', function () {
+    $this->service->getCommande('utilisateur-jean', 'commande-inconnue');
+})->throws(CommandeNotFound::class);
+
+it("lève CommandeNotFound pour la commande d'un autre utilisateur", function () {
+    // Marie connaît l'identifiant de la commande de Jean : même réponse que si elle n'existait pas
+    $this->service->getCommande('utilisateur-marie', 'commande-jean');
+})->throws(CommandeNotFound::class);

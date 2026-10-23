@@ -229,3 +229,32 @@ it('l\'état reste panier après le refus', function () {
 
     expect($this->commande->getStatus())->toBe(CommandeStatus::PANIER);
 });
+
+// ── reconstruction depuis la base (lignes passées au constructeur) ─
+
+it('reconstruit une commande validée avec ses lignes sans passer par ajouterSoiree', function () {
+    // ajouterSoiree() refuserait ces lignes sur une commande VALIDEE : le constructeur les accepte
+    $commande = new Commande(
+        'commande-2',
+        new DateTimeImmutable('2027-06-01 10:00'),
+        new Utilisateur('utilisateur-1', 'jean@mail.fr', 'Dupont', 'Jean', 'hash', Utilisateur::ROLE_CLIENT),
+        CommandeStatus::VALIDEE,
+        [lignePanier('L1', $this->rock, $this->normal, 2), lignePanier('L2', $this->jazz, $this->reduit, 1)]
+    );
+
+    expect($commande->getStatus())->toBe(CommandeStatus::VALIDEE)
+        ->and(array_map(fn ($l) => $l->getIdLigne(), $commande->getSoireesDansCommande()))->toBe(['L1', 'L2'])
+        ->and($commande->getMontantTotal())->toBe(95.0);
+});
+
+it('garde une commande reconstruite non modifiable', function () {
+    $commande = new Commande(
+        'commande-2',
+        new DateTimeImmutable('2027-06-01 10:00'),
+        new Utilisateur('utilisateur-1', 'jean@mail.fr', 'Dupont', 'Jean', 'hash', Utilisateur::ROLE_CLIENT),
+        CommandeStatus::VALIDEE,
+        [lignePanier('L1', $this->rock, $this->normal, 2)]
+    );
+
+    $commande->supprimerSoiree('L1');
+})->throws(CommandeNonModifiable::class);

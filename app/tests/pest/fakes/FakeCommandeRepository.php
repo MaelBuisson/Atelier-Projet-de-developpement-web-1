@@ -49,4 +49,10 @@ class FakeCommandeRepository implements CommandeRepository
 
         $this->commandes[$commande->getId()] = $commande;
     }
+
+    // même contrat que PgCommandeRepository : la commande, quel que soit son statut, ou null
+    public function findById(string $idCommande): ?Commande
+    {
+        return $this->commandes[$idCommande] ?? null;
+    }
 }
