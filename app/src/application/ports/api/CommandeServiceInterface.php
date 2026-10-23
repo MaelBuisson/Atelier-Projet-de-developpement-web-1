@@ -59,4 +59,12 @@ interface CommandeServiceInterface
      * @throws \nrv\domain\exceptions\PlacesInsuffisantes si une soirée n'a plus assez de places
      */
     public function payer(string $idUtilisateur, string $idCommande): CommandeDTO;
+
+    /**
+     * Fonction pour avoir toutes les commandes d'un utilisateur
+     * 
+     * @param string $idUtilisateur
+     * @return array une liste de commande
+     */
+    public function getAllCommandesByUser(string $idUtilisateur): array;
 }

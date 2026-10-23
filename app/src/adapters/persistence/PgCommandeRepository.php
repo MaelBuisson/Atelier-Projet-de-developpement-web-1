@@ -210,86 +210,97 @@ class PgCommandeRepository implements CommandeRepository
         return $this->toCommande($where, $params);
     }
 
-    /**
-     * Requête commune à getPanier et findById : seule la clause WHERE change.
-     * $where est toujours écrit dans ce fichier (jamais une donnée du client) ; les valeurs passent par $params.
-     * Retourne la première commande trouvée avec ses lignes et son statut lu en base, ou null.
-     */
+    public function findAllByUtilisateur(string $idUtilisateur): array
+    {
+        return $this->toCommandes(
+            'WHERE c.id_utilisateur = :id_utilisateur',
+            ['id_utilisateur' => $idUtilisateur]
+        );
+    }
+
+    // On garde la première commande trouvée
     private function toCommande(string $where, array $params): ?Commande
     {
-        // une seule requête : la commande, son utilisateur, et pour chaque ligne la soirée et le tarif.
-        // LEFT JOIN sur les lignes : un panier sans ligne donne une seule rangée, colonnes de ligne à NULL.
-        // Les alias évitent les collisions de noms (nom, date, horaire existent dans plusieurs tables).
+        return $this->toCommandes($where, $params)[0] ?? null;
+    }
+
+    /**
+     * Même requête qu'avant, mais renvoie toutes les commandes trouvées, avec leurs lignes.
+     * @return Commande[]
+     */
+    private function toCommandes(string $where, array $params): array
+    {
         $stmt = $this->pdo->prepare(
             "SELECT c.id_commande, c.date_creation, c.statut,
-                    u.id_utilisateur, u.email, u.nom AS utilisateur_nom, u.prenom AS utilisateur_prenom,
-                    u.password AS utilisateur_password, u.role AS utilisateur_role,
-                    sdc.id_ligne, sdc.quantite,
-                    so.id_soiree, so.nom AS soiree_nom, so.thematique AS soiree_thematique,
-                    so.date AS soiree_date, so.horaire AS soiree_horaire,
-                    so.lieu AS soiree_lieu, so.nb_place AS soiree_nb_place,
-                    t.nom AS tarif_nom, t.prix AS tarif_prix
-             FROM commande c
-             JOIN utilisateur u ON u.id_utilisateur = c.id_utilisateur
-             LEFT JOIN soiree_dans_commande sdc ON sdc.id_commande = c.id_commande
-             LEFT JOIN soiree so ON so.id_soiree = sdc.id_soiree
-             LEFT JOIN tarif t ON t.id_soiree = sdc.id_soiree AND t.nom = sdc.nom_tarif
-             $where
-             ORDER BY so.date, so.horaire, t.nom"
+                u.id_utilisateur, u.email, u.nom AS utilisateur_nom, u.prenom AS utilisateur_prenom,
+                u.password AS utilisateur_password, u.role AS utilisateur_role,
+                sdc.id_ligne, sdc.quantite,
+                so.id_soiree, so.nom AS soiree_nom, so.thematique AS soiree_thematique,
+                so.date AS soiree_date, so.horaire AS soiree_horaire,
+                so.lieu AS soiree_lieu, so.nb_place AS soiree_nb_place,
+                t.nom AS tarif_nom, t.prix AS tarif_prix
+         FROM commande c
+         JOIN utilisateur u ON u.id_utilisateur = c.id_utilisateur
+         LEFT JOIN soiree_dans_commande sdc ON sdc.id_commande = c.id_commande
+         LEFT JOIN soiree so ON so.id_soiree = sdc.id_soiree
+         LEFT JOIN tarif t ON t.id_soiree = sdc.id_soiree AND t.nom = sdc.nom_tarif
+         $where
+         ORDER BY c.date_creation DESC, c.id_commande, so.date, so.horaire, t.nom"
         );
         $stmt->execute($params);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($rows === []) {
-            return null;
+        // regroupement des rangées par commande 
+        $parCommande = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $parCommande[$row['id_commande']][] = $row;
         }
 
-        // soirées déjà construites, indexées par id : les lignes d'une même soirée partagent le même objet
-        $soirees = [];
-        $lignes = [];
+        $commandes = [];
+        foreach ($parCommande as $rows) {
+            $soirees = [];
+            $lignes = [];
 
-        foreach ($rows as $row) {
-            // panier sans ligne : la rangée ne contient que la commande
-            if ($row['id_ligne'] === null) {
-                continue;
+            foreach ($rows as $row) {
+                if ($row['id_ligne'] === null) {
+                    continue; // commande sans ligne
+                }
+
+                $soirees[$row['id_soiree']] ??= new Soiree(
+                    $row['id_soiree'],
+                    $row['soiree_nom'],
+                    $row['soiree_thematique'],
+                    new DateTimeImmutable($row['soiree_date']),
+                    DateTimeImmutable::createFromFormat('!H:i:s', $row['soiree_horaire']),
+                    $row['soiree_lieu'],
+                    (int) $row['soiree_nb_place']
+                );
+
+                $lignes[] = new SoireeDansCommande(
+                    $row['id_ligne'],
+                    $soirees[$row['id_soiree']],
+                    new Tarif($row['tarif_nom'], (float) $row['tarif_prix']),
+                    (int) $row['quantite']
+                );
             }
 
-            $soirees[$row['id_soiree']] ??= new Soiree(
-                $row['id_soiree'],
-                $row['soiree_nom'],
-                $row['soiree_thematique'],
-                new DateTimeImmutable($row['soiree_date']),
-                // colonne TIME : '!' fixe la date au 1970-01-01 au lieu de la date du jour
-                DateTimeImmutable::createFromFormat('!H:i:s', $row['soiree_horaire']),
-                $row['soiree_lieu'],
-                (int) $row['soiree_nb_place']
-            );
+            $premiere = $rows[0];
 
-            $lignes[] = new SoireeDansCommande(
-                $row['id_ligne'],
-                $soirees[$row['id_soiree']],
-                new Tarif($row['tarif_nom'], (float) $row['tarif_prix']),
-                (int) $row['quantite']
+            $commandes[] = new Commande(
+                $premiere['id_commande'],
+                new DateTimeImmutable($premiere['date_creation']),
+                new Utilisateur(
+                    $premiere['id_utilisateur'],
+                    $premiere['email'],
+                    $premiere['utilisateur_nom'],
+                    $premiere['utilisateur_prenom'],
+                    $premiere['utilisateur_password'],
+                    (int) $premiere['utilisateur_role']
+                ),
+                CommandeStatus::fromName($premiere['statut']),
+                $lignes
             );
         }
 
-        // commande construite après les lignes : elles sont passées au constructeur, car ajouterSoiree()
-        // refuserait de les ajouter à une commande déjà validée ou payée
-        $premiere = $rows[0];
-
-        return new Commande(
-            $premiere['id_commande'],
-            new DateTimeImmutable($premiere['date_creation']),
-            new Utilisateur(
-                $premiere['id_utilisateur'],
-                $premiere['email'],
-                $premiere['utilisateur_nom'],
-                $premiere['utilisateur_prenom'],
-                $premiere['utilisateur_password'],
-                (int) $premiere['utilisateur_role']
-            ),
-            CommandeStatus::fromName($premiere['statut']),
-            $lignes
-        );
+        return $commandes;
     }
 }

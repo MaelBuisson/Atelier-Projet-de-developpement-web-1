@@ -39,4 +39,7 @@ interface CommandeRepository
      * @throws CommandeNonPayable si la commande n'est plus validée en base (paiement déjà enregistré)
      */
     public function enregistrerPaiement(Commande $commande, array $billets): void;
+
+    /** @return Commande[] commandes de l'utilisateur (tous statuts), de la plus récente à la plus ancienne */
+    public function findAllByUtilisateur(string $idUtilisateur): array;
 }

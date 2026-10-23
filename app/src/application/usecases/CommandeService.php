@@ -126,6 +126,20 @@ class CommandeService implements CommandeServiceInterface
     }
 
     /**
+     * Toutes les commandes de l'utilisateur, la plus récente d'abord.
+     * Le panier en cours (statut PANIER) en fait partie : filtre-le ici si tu ne veux que les commandes validées ou payées.
+     *
+     * @return CommandeDTO[]
+     */
+    public function getAllCommandesByUser(string $idUtilisateur): array
+    {
+        return array_map(
+            fn(Commande $c) => CommandeDTO::fromEntity($c),
+            $this->commandeRepository->findAllByUtilisateur($idUtilisateur)
+        );
+    }
+
+    /**
      * Paiement simulé (aucune donnée bancaire) : le domaine passe la commande au statut PAYEE
      * et crée un billet par place ; le repository vérifie les places et enregistre le tout
      * dans une seule transaction. En cas de refus, la commande reste validée.
