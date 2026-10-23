@@ -3,6 +3,7 @@
 namespace nrv\application\usecases;
 
 use DateTimeImmutable;
+use nrv\application\dto\CommandeDTO;
 use nrv\application\dto\PanierDTO;
 use nrv\application\ports\api\CommandeServiceInterface;
 use nrv\application\ports\spi\CommandeRepository;
@@ -11,8 +12,9 @@ use nrv\application\ports\spi\TarifRepository;
 use nrv\application\ports\spi\UtilisateurRepository;
 use nrv\domain\entities\Commande;
 use nrv\domain\entities\SoireeDansCommande;
+use nrv\domain\exceptions\PanierVide;
 use nrv\domain\exceptions\SoireeDansCommandeNotFound;
-use Override;
+use nrv\domain\exceptions\CommandeNotFound;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -93,5 +95,61 @@ class CommandeService implements CommandeServiceInterface
                 new DateTimeImmutable(),
                 $this->utilisateurRepository->findById($idUtilisateur)
             );
+    }
+
+    /**
+     * Le panier devient une commande VALIDEE ; les règles (panier non vide, statut PANIER) sont dans le domaine.
+     * Un seul save() après valider() : en cas de refus, rien n'est enregistré.
+     */
+    public function valider(string $idUtilisateur): CommandeDTO
+    {
+        $commande = $this->commandeRepository->getPanier($idUtilisateur);
+
+        // pas de panier : pour le client, c'est un panier vide (rien à valider)
+        if ($commande === null) {
+            throw new PanierVide();
+        }
+
+        $commande->valider();
+
+        $this->commandeRepository->save($commande);
+
+        return CommandeDTO::fromEntity($commande);
+    }
+
+    /**
+     * Commande de l'utilisateur, quel que soit son statut.
+     */
+    public function getCommande(string $idUtilisateur, string $idCommande): CommandeDTO
+    {
+        return CommandeDTO::fromEntity($this->commandeDe($idUtilisateur, $idCommande));
+    }
+
+    /**
+     * Paiement simulé (aucune donnée bancaire) : le domaine passe la commande au statut PAYEE
+     * et crée un billet par place ; le repository vérifie les places et enregistre le tout
+     * dans une seule transaction. En cas de refus, la commande reste validée.
+     */
+    public function payer(string $idUtilisateur, string $idCommande): CommandeDTO
+    {
+        $commande = $this->commandeDe($idUtilisateur, $idCommande);
+
+        $billets = $commande->payer();
+
+        $this->commandeRepository->enregistrerPaiement($commande, $billets);
+
+        return CommandeDTO::fromEntity($commande);
+    }
+
+    // commande inexistante ou d'un autre utilisateur : même réponse, pour ne pas révéler qu'elle existe
+    private function commandeDe(string $idUtilisateur, string $idCommande): Commande
+    {
+        $commande = $this->commandeRepository->findById($idCommande);
+
+        if ($commande === null || $commande->getUtilisateur()->getId() !== $idUtilisateur) {
+            throw new CommandeNotFound($idCommande);
+        }
+
+        return $commande;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace nrv\application\ports\api;
 
+use nrv\application\dto\CommandeDTO;
 use nrv\application\dto\PanierDTO;
 
 /**
@@ -34,4 +35,28 @@ interface CommandeServiceInterface
      * @throws \nrv\domain\exceptions\SoireeDansCommandeNotFound si la ligne n'est pas dans le panier de l'utilisateur
      */
     public function supprimerDuPanier(string $idUtilisateur, string $idLigne): PanierDTO;
+
+    /**
+     * Valide le panier de l'utilisateur : il devient une commande VALIDEE, qui ne peut plus être modifiée.
+     *
+     * @throws \nrv\domain\exceptions\PanierVide si l'utilisateur n'a pas de panier ou s'il est vide
+     * @throws \nrv\domain\exceptions\CommandeNonValidable si la commande n'est plus un panier
+     */
+    public function valider(string $idUtilisateur): CommandeDTO;
+
+    /**
+     * Commande de l'utilisateur, quel que soit son statut.
+     *
+     * @throws \nrv\domain\exceptions\CommandeNotFound si elle n'existe pas ou appartient à un autre utilisateur
+     */
+    public function getCommande(string $idUtilisateur, string $idCommande): CommandeDTO;
+
+    /**
+     * Paie (paiement simulé) une commande validée de l'utilisateur et crée ses billets, un par place.
+     *
+     * @throws \nrv\domain\exceptions\CommandeNotFound si elle n'existe pas ou appartient à un autre utilisateur
+     * @throws \nrv\domain\exceptions\CommandeNonPayable si elle n'est pas au statut VALIDEE
+     * @throws \nrv\domain\exceptions\PlacesInsuffisantes si une soirée n'a plus assez de places
+     */
+    public function payer(string $idUtilisateur, string $idCommande): CommandeDTO;
 }

@@ -229,3 +229,60 @@ it('l\'état reste panier après le refus', function () {
 
     expect($this->commande->getStatus())->toBe(CommandeStatus::PANIER);
 });
+
+// ── reconstruction depuis la base (lignes passées au constructeur) ─
+
+it('reconstruit une commande validée avec ses lignes sans passer par ajouterSoiree', function () {
+    // ajouterSoiree() refuserait ces lignes sur une commande VALIDEE : le constructeur les accepte
+    $commande = new Commande(
+        'commande-2',
+        new DateTimeImmutable('2027-06-01 10:00'),
+        new Utilisateur('utilisateur-1', 'jean@mail.fr', 'Dupont', 'Jean', 'hash', Utilisateur::ROLE_CLIENT),
+        CommandeStatus::VALIDEE,
+        [lignePanier('L1', $this->rock, $this->normal, 2), lignePanier('L2', $this->jazz, $this->reduit, 1)]
+    );
+
+    expect($commande->getStatus())->toBe(CommandeStatus::VALIDEE)
+        ->and(array_map(fn ($l) => $l->getIdLigne(), $commande->getSoireesDansCommande()))->toBe(['L1', 'L2'])
+        ->and($commande->getMontantTotal())->toBe(95.0);
+});
+
+it('garde une commande reconstruite non modifiable', function () {
+    $commande = new Commande(
+        'commande-2',
+        new DateTimeImmutable('2027-06-01 10:00'),
+        new Utilisateur('utilisateur-1', 'jean@mail.fr', 'Dupont', 'Jean', 'hash', Utilisateur::ROLE_CLIENT),
+        CommandeStatus::VALIDEE,
+        [lignePanier('L1', $this->rock, $this->normal, 2)]
+    );
+
+    $commande->supprimerSoiree('L1');
+})->throws(CommandeNonModifiable::class);
+
+// ── paiement : création des billets ─
+
+it('crée un billet par place au paiement, avec des tokens uniques de 64 caractères hexadécimaux', function () {
+    $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 2));
+    $this->commande->ajouterSoiree(lignePanier('L2', $this->jazz, $this->reduit, 1));
+    $this->commande->valider();
+
+    $billets = $this->commande->payer();
+    $tokens = array_map(fn ($b) => $b->getToken(), $billets);
+
+    expect($this->commande->getStatus())->toBe(CommandeStatus::PAYEE)
+        ->and($billets)->toHaveCount(3)
+        ->and(array_unique($tokens))->toHaveCount(3)
+        ->and($tokens)->each->toMatch('/^[0-9a-f]{64}$/')
+        ->and(array_map(fn ($b) => $b->getSoiree()->getId() . '/' . $b->getTarif()->getNom(), $billets))
+            ->toBe(['soiree-rock/normal', 'soiree-rock/normal', 'soiree-jazz/reduit'])
+        ->and($billets[0]->getIdCommande())->toBe('commande-1')
+        ->and($billets[0]->getTitulaire()->getId())->toBe('utilisateur-1');
+});
+
+it('compte les places demandées par soirée, tous tarifs confondus', function () {
+    $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 2));
+    $this->commande->ajouterSoiree(lignePanier('L2', $this->rock, $this->reduit, 3));
+    $this->commande->ajouterSoiree(lignePanier('L3', $this->jazz, $this->normal, 1));
+
+    expect($this->commande->getPlacesParSoiree())->toBe(['soiree-rock' => 5, 'soiree-jazz' => 1]);
+});

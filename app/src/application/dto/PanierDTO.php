@@ -22,17 +22,7 @@ final class PanierDTO implements \JsonSerializable
     // montants arrondis au centime ; le nombre de billets est la somme des quantités des lignes
     public static function fromEntity(Commande $c): self
     {
-        $lignes = array_map(
-            fn(SoireeDansCommande $l) => [
-                'idLigne' => $l->getIdLigne(),
-                'idSoiree' => $l->getSoiree()->getId(),
-                'nomSoiree' => $l->getSoiree()->getNom(),
-                'tarif' => $l->getTarif()->getNom(),
-                'quantite' => $l->getQuantite(),
-                'sousTotal' => round($l->getMontant(), 2)
-            ],
-            $c->getSoireesDansCommande()
-        );
+        $lignes = self::lignesDe($c);
 
         return new self(
             $lignes,
@@ -49,5 +39,24 @@ final class PanierDTO implements \JsonSerializable
             'nbBillets' => $this->nbBillets,
             'montantTotal' => $this->montantTotal,
         ];
+    }
+
+    /**
+     * Lignes d'une commande au format JSON du client ; partagé avec CommandeDTO
+     * pour que le panier et la commande aient exactement le même format de ligne.
+     */
+    public static function lignesDe(Commande $c): array
+    {
+        return array_map(
+            fn(SoireeDansCommande $l) => [
+                'idLigne' => $l->getIdLigne(),
+                'idSoiree' => $l->getSoiree()->getId(),
+                'nomSoiree' => $l->getSoiree()->getNom(),
+                'tarif' => $l->getTarif()->getNom(),
+                'quantite' => $l->getQuantite(),
+                'sousTotal' => round($l->getMontant(), 2)
+            ],
+            $c->getSoireesDansCommande()
+        );
     }
 }
