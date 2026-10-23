@@ -11,6 +11,4 @@ interface BilletRepository
     // Fonction pour avoir tous les billets d'une commande d'un utilisateur
     public function getBilletsByCommandePayee(string $idCommande, string $idUtilisateur): array;
 
-    // Fonction pour créer un billet
-    private function creerBillet(array $row): Billet;
 }

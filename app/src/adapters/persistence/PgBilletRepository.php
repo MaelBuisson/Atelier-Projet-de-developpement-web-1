@@ -60,7 +60,7 @@ class PgBilletRepository implements BilletRepository
              JOIN tarif t ON t.id_soiree = b.id_soiree AND t.nom = b.nom_tarif
              WHERE b.id_commande = :idCommande
                AND c.id_utilisateur = :idUtilisateur
-               AND c.statut = 'payee'
+               AND c.statut = 'PAYEE'
              ORDER BY s.date, b.token"
         );
         $stmt->execute(['idCommande' => $idCommande, 'idUtilisateur' => $idUtilisateur]);

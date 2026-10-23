@@ -23,6 +23,7 @@ use nrv\adapters\controllers\actions\PayerCommandeAction;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
 use nrv\adapters\controllers\actions\GetBilletAction;
 use nrv\adapters\controllers\actions\ListerCommandesAction;
+use nrv\adapters\controllers\actions\GetBilletsCommandeAction;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -95,6 +96,8 @@ $app->group('/commandes', function (RouteCollectorProxy $group) {
         ->setName('commande-detail');
     $group->post('/{id}/paiement', PayerCommandeAction::class)
         ->setName('commande-paiement');
+    $group->get('/{id}/billets', GetBilletsCommandeAction::class)
+        ->setName('commande-billets');
 })->add(AuthMiddleware::class);
 
 $app->get('/billets/{token}', GetBilletAction::class)->setName('get_billet')->add(AuthMiddleware::class);
