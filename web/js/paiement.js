@@ -1,32 +1,41 @@
-// Page paiement.html : récapitulatif (GET /commandes/{id}) puis paiement (POST /commandes/{id}/paiement)
+// ==========================================
+// 1. INITIALISATION & VARIABLES GLOBALES
+// ==========================================
 
+// Récupération de l'ID de la commande transmis dans l'URL (ex: paiement.html?id=123)
 const idCommande = new URLSearchParams(location.search).get('id');
 
+// Ciblage des éléments du DOM
 const listeBillets = document.getElementById('liste-billets');
 const totalPrix = document.getElementById('total-prix');
 const message = document.getElementById('message-paiement');
 const form = document.getElementById('form-paiement');
 const btnPayer = document.getElementById('btn-payer');
 
-const formatPrix = (prix) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(prix);
-
+// Fonctions utilitaires pour le formatage visuel
+const formatPrix = (prix) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(prix);
 const libelleTarif = (nom) => (nom === 'reduit' ? 'Tarif réduit' : 'Tarif normal');
 
+// Gère l'affichage des messages d'erreur ou de succès
 function afficherMessage(texte, erreur = true) {
     message.textContent = texte; 
     message.className = erreur ? 'message message-error' : 'message message-success';
     message.hidden = false;
 }
 
-// redirige vers la page de connexion si l'utilisateur n'est pas connecté
+// Déconnecte l'utilisateur et le renvoie vers la page de connexion si son token a expiré
 function redirigerVersConnexion() {
     localStorage.removeItem(TOKEN_KEY);
     window.location.href = 'connexion.html';
 }
 
+// ==========================================
+// 2. AFFICHAGE DU RÉCAPITULATIF DE COMMANDE
+// ==========================================
+
+// Génère le code HTML pour afficher chaque ligne de la commande
 function afficherCommande(commande) {
-    listeBillets.replaceChildren();
+    listeBillets.replaceChildren(); // Vide la liste de chargement
 
     commande.lignes.forEach(ligne => {
         const item = document.createElement('div');
@@ -42,11 +51,13 @@ function afficherCommande(commande) {
         listeBillets.append(item);
     });
 
+    // Mise à jour du montant total et du bouton de paiement
     totalPrix.textContent = formatPrix(commande.montantTotal);
     btnPayer.textContent = `Payer ${formatPrix(commande.montantTotal)}`;
-    btnPayer.disabled = false;
+    btnPayer.disabled = false; // Active le bouton maintenant que la commande est chargée
 }
 
+// Requête GET vers l'API pour récupérer les détails de la commande
 async function chargerCommande() {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
@@ -63,6 +74,7 @@ async function chargerCommande() {
             headers: { Authorization: `Bearer ${token}` },
         });
 
+        // Gestion des erreurs d'authentification ou de ressource introuvable
         if (response.status === 401) {
             redirigerVersConnexion();
             return;
@@ -83,8 +95,12 @@ async function chargerCommande() {
     }
 }
 
+// ==========================================
+// 3. TRAITEMENT DU FORMULAIRE DE PAIEMENT
+// ==========================================
+
 form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Empêche le rechargement de la page
 
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
@@ -92,24 +108,22 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
-    // 1. Récupération des valeurs
+    // Récupération des valeurs saisies
     const numero = document.getElementById('cb-numero').value.trim();
     const dateExpiration = document.getElementById('cb-date').value.trim();
     const cvc = document.getElementById('cb-cvc').value.trim();
 
-   
-    const numeroNettoye = numero.replace(/\s/g, '');
+    // Validations (Regex) côté Front-end avant d'envoyer au serveur
+    const numeroNettoye = numero.replace(/\s/g, ''); // Retire les espaces éventuels
     if (!/^\d{16}$/.test(numeroNettoye)) {
         afficherMessage("Le numéro de carte doit contenir 16 chiffres.");
         return;
     }
-
     
     if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(dateExpiration)) {
         afficherMessage("La date d'expiration doit être au format MM/AA (ex: 12/25).");
         return;
     }
-
     
     if (!/^\d{3}$/.test(cvc)) {
         afficherMessage("Le cryptogramme (CVC) doit contenir 3 chiffres.");
@@ -117,9 +131,10 @@ form.addEventListener('submit', async (e) => {
     }
 
     message.hidden = true;
-    btnPayer.disabled = true; 
+    btnPayer.disabled = true; // Empêche le double-clic pendant la transaction
 
     try {
+        // Envoi de la requête POST pour valider le paiement
         const response = await fetch(`${API}/commandes/${encodeURIComponent(idCommande)}/paiement`, {
             method: 'POST',
             headers: {
@@ -139,15 +154,16 @@ form.addEventListener('submit', async (e) => {
         }
 
         let data = {};
-        try { data = await response.json(); } catch { /* corps vide */ }
+        try { data = await response.json(); } catch { /* corps vide si pas de JSON */ }
 
+        // Si le paiement échoue (carte refusée, provision insuffisante, etc.)
         if (!response.ok) {
             afficherMessage(data.error || data.message || `Erreur ${response.status}`);
-            btnPayer.disabled = false;
+            btnPayer.disabled = false; // Réactive le bouton pour réessayer
             return;
         }
 
-        
+        // Succès du paiement : redirection vers la page de confirmation avec l'ID de la commande
         window.location.href = `confirmation.html?id=${encodeURIComponent(idCommande)}`;
         
     } catch (err) {
@@ -157,4 +173,5 @@ form.addEventListener('submit', async (e) => {
     }
 });
 
+// Lancement du chargement de la commande au démarrage du script
 chargerCommande();

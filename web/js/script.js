@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const burgerBtn = document.getElementById('burger-btn');
     const mainNav = document.getElementById('main-nav');
 
-    // Menu burger
+    // Toggle pour afficher/masquer le menu sur mobile
     if (burgerBtn && mainNav) {
         burgerBtn.addEventListener('click', () => {
             burgerBtn.classList.toggle('active');
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Mise à jour de la navbar (Panier, Connexion/Inscription)
+    // Met à jour l'affichage de la navbar selon l'état de connexion de l'utilisateur
     mettreAJourNavigation();
 
 
@@ -26,14 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDate = document.getElementById('filter-date');
 
     if (conteneurGrille) {
+        // Fonction asynchrone pour interroger l'API en appliquant les filtres
         async function chargerSpectacles() {
             try {
+                // URLSearchParams permet de construire proprement la fin de l'URL (?style=Rock&date=...)
                 const params = new URLSearchParams();
 
                 if (selectedStyle && selectedStyle.value !== '') {
                     params.append('style', selectedStyle.value);
                 }
-                // CORRECTION : On vérifie bien selectedDate.value et non selectedStyle.value
                 if (selectedDate && selectedDate.value !== '') {
                     params.append('date', selectedDate.value);
                 }
@@ -53,8 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Génère et injecte le code HTML pour chaque carte de spectacle
         function afficherSpectacles(spectacles) {
-            conteneurGrille.innerHTML = '';
+            conteneurGrille.innerHTML = ''; // Vide la zone de chargement
 
             if (spectacles.length === 0) {
                 conteneurGrille.innerHTML = `<p style="color: white;">Aucun spectacle ne correspond à vos critères.</p>`;
@@ -62,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             spectacles.forEach(spectacle => {
+                // Image par défaut si l'API n'en fournit pas
                 const imageUrl = spectacle.image ? spectacle.image : 'https://picsum.photos/seed/nrv-default/400/300';
 
                 const carteHTML = `
@@ -78,9 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 conteneurGrille.insertAdjacentHTML('beforeend', carteHTML);
             });
 
+            // Une fois les cartes créées, on leur attache l'événement de clic
             reactiverClicsSurCarte();
         }
 
+        // Rend chaque carte cliquable pour rediriger vers la page de la soirée associée
         function reactiverClicsSurCarte() {
             const cartes = document.querySelectorAll('.spectacle-card');
             cartes.forEach(carte => {
@@ -91,10 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Chargement initial
+        // Chargement initial de tous les spectacles au démarrage
         chargerSpectacles();
 
-        // Écoute des changements sur les filtres
+        // Recharge la grille automatiquement dès qu'un filtre (select) change de valeur
         if (selectedStyle && selectedDate) {
             selectedStyle.addEventListener('change', chargerSpectacles);
             selectedDate.addEventListener('change', chargerSpectacles);
@@ -113,27 +118,32 @@ async function mettreAJourNavigation() {
     const lienConnexion = document.querySelector('a[href="connexion.html"]');
     const lienInscription = document.querySelector('a[href="inscription.html"]');
 
+    // Utilisateur non connecté : état par défaut, pas de mise à jour spécifique
     if (!token) {
         if (lienPanier) lienPanier.textContent = 'Panier (0)';
         return; 
     }
 
+    // Utilisateur connecté : on masque le bouton d'inscription
     if (lienInscription) {
         lienInscription.style.display = 'none'; 
     }
 
+    // Transformation du bouton "Se connecter" en "Se déconnecter"
     if (lienConnexion) {
         lienConnexion.textContent = 'Se déconnecter';
         lienConnexion.href = '#';
         lienConnexion.classList.replace('btn-primary', 'btn-secondary'); 
         
+        // Logique de déconnexion
         lienConnexion.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem(TOKEN_KEY);
-            window.location.href = 'index.html'; 
+            localStorage.removeItem(TOKEN_KEY); // Détruit le jeton de session
+            window.location.href = 'index.html'; // Retour accueil
         });
     }
 
+    // Interrogation de l'API pour récupérer le contenu du panier en temps réel
     try {
         const response = await fetch(`${API}/panier`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -141,12 +151,14 @@ async function mettreAJourNavigation() {
 
         if (response.ok) {
             const data = await response.json();
+            // Calcule le nombre total de billets (ex: 2 billets normaux + 1 réduit = 3 articles)
             const nbTotalBillets = data.panier.lignes.reduce((total, ligne) => total + ligne.quantite, 0);
             
             if (lienPanier) {
                 lienPanier.textContent = `Panier (${nbTotalBillets})`;
             }
         } else if (response.status === 401) {
+            // Sécurité : Si l'API refuse le token (expiré), on déconnecte l'utilisateur
             localStorage.removeItem(TOKEN_KEY);
             window.location.reload(); 
         }

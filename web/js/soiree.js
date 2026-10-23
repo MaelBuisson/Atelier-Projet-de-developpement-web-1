@@ -1,41 +1,34 @@
-// Page soiree.html : détail d'une soirée, chargé depuis l'API et affiché avec un template Handlebars
+// ==========================================
+// 1. HELPERS HANDLEBARS (Formatage des données)
+// ==========================================
+// Les "helpers" sont des petites fonctions qui transforment les données brutes de l'API 
+// avant de les afficher dans le template HTML (ex: {{dateLongue date}}).
 
-// ── helpers Handlebars : mise en forme des données renvoyées par l'API ─
-
-// "2027-07-08" → "jeudi 8 juillet 2027" ; T12:00 évite un décalage de jour dû au fuseau horaire
+// Transforme "2027-07-08" en "jeudi 8 juillet 2027" (T12:00 évite les bugs de fuseau horaire)
 Handlebars.registerHelper('dateLongue', date => new Date(`${date}T12:00:00`).toLocaleDateString(
-    'fr-FR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }
+    'fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
 ));
 
-// 35 → "35,00 €"
+// Transforme le nombre 35 en "35,00 €"
 Handlebars.registerHelper('prix', prix =>
-    new Intl.NumberFormat(
-        'fr-FR',
-        {
-            style: 'currency',
-            currency: 'EUR'
-        }
-    ).format(prix)
+    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(prix)
 );
 
-// "reduit" → "Tarif réduit", "normal" → "Tarif normal"
+// Traduit les codes de l'API en texte lisible
 Handlebars.registerHelper('nomTarif', nom => (nom === 'reduit' ? 'Tarif réduit' : 'Tarif normal'));
 
-// ['John Doe', 'The Roes'] → "John Doe, The Roes"
+// Transforme un tableau ['Artiste 1', 'Artiste 2'] en chaîne "Artiste 1, Artiste 2"
 Handlebars.registerHelper('join', liste => liste.join(', '));
 
-// ── chargement de la soirée ─
 
+// ==========================================
+// 2. CHARGEMENT DE LA SOIRÉE DEPUIS L'API
+// ==========================================
 const container = document.querySelector('.soiree-container');
-// le template est compilé une seule fois, puis appliqué aux données de la soirée
+// On compile le template HTML (situé dans soiree.html) pour qu'il soit prêt à recevoir les données
 const template = Handlebars.compile(document.getElementById('tpl-soiree').innerHTML);
 
-// message d'erreur affiché dans la page ; textContent insère du texte, jamais du HTML
+// Affiche un message proprement si la soirée n'existe pas ou si l'API plante
 function afficherErreur(message) {
     container.innerHTML = '';
     const p = document.createElement('p');
@@ -45,58 +38,65 @@ function afficherErreur(message) {
 }
 
 async function chargerSoiree() {
-    // l'identifiant de la soirée arrive dans l'URL : soiree.html?id=…
+    // Récupération de l'ID de la soirée dans l'URL (ex: soiree.html?id=123)
     const id = new URLSearchParams(location.search).get('id');
-    if(!id) {
+    if (!id) {
         afficherErreur('Aucune soirée sélectionnée.');
         return;
     }
 
     try {
-        // encodeURIComponent : l'id vient de l'URL, il ne doit pas pouvoir modifier l'adresse appelée
-        const response = await fetch(`${API}/soiree/${encodeURIComponent(id)}`)
+        const response = await fetch(`${API}/soiree/${encodeURIComponent(id)}`);
 
-        // 404 : soirée inconnue ; 400 : identifiant qui n'est pas un UUID
-        if(response.status === 404 || response.status === 400) {
+        if (response.status === 404 || response.status === 400) {
             afficherErreur("Cette soirée n'existe pas.");
             return;
         }
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        // la soirée est dans data.soiree ; {{…}} échappe le HTML, ce qui protège des injections (XSS)
         const data = await response.json();
+        
+        // Mise à jour du titre de l'onglet du navigateur
         document.title = `${data.soiree.nom} - NRV`;
+        
+        // Injection des données de l'API dans le template, puis affichage dans le conteneur
         container.innerHTML = template(data.soiree);
+        
+        // Une fois le HTML généré, on active la logique d'ajout au panier
         brancherAjoutPanier(id);
     }
     catch (e) {
-        // API arrêtée, réseau coupé ou erreur 500
         console.error(e);
         afficherErreur('Impossible de charger la soirée, réessayez plus tard.');
     }
 }
 
+// Lancement automatique au chargement du script
 chargerSoiree();
 
 
+// ==========================================
+// 3. GESTION DU MENU MOBILE (Burger)
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Gestion du menu burger
     const burgerBtn = document.getElementById('burger-btn');
     const mainNav = document.getElementById('main-nav');
 
     if (burgerBtn && mainNav) {
         burgerBtn.addEventListener('click', () => {
-            // Ajoute ou retire la classe "active" sur le bouton et le menu
             burgerBtn.classList.toggle('active');
             mainNav.classList.toggle('active');
         });
     }
 });
+
+
+// ==========================================
+// 4. LOGIQUE D'AJOUT AU PANIER
+// ==========================================
 function brancherAjoutPanier(idSoiree) {
     const form = document.getElementById('form-ajout');
-    if (!form) return; // soirée sans tarif
+    if (!form) return; // Si la soirée n'a pas de tarif (ex: gratuite ou complète), on arrête là
 
     const messageAjout = document.getElementById('ajout-message');
     const valeur = document.getElementById('qte-valeur');
@@ -105,12 +105,13 @@ function brancherAjoutPanier(idSoiree) {
     const bouton = document.getElementById('btn-ajout');
     let quantite = 1;
 
+    // Récupère le tarif actuellement sélectionné par l'utilisateur (radio button)
     const tarifChoisi = () => form.querySelector('input[name="ajout-tarif"]:checked');
 
-    // Fonction pour mettre à jour l'affichage de la quantité
+    // Met à jour visuellement le compteur et le texte du bouton
     function majAffichage() {
         valeur.textContent = quantite;
-        moins.disabled = quantite <= 1;
+        moins.disabled = quantite <= 1; // On ne peut pas commander moins de 1 billet
         bouton.textContent = `🛒 Ajouter ${quantite} billet${quantite > 1 ? 's' : ''}`;
     }
 
@@ -120,6 +121,7 @@ function brancherAjoutPanier(idSoiree) {
         messageAjout.hidden = false;
     }
 
+    // Gestion des boutons + et -
     moins.addEventListener('click', () => {
         if (quantite > 1) {
             quantite--;
@@ -132,10 +134,11 @@ function brancherAjoutPanier(idSoiree) {
         majAffichage();
     });
 
+    // Envoi de l'ajout au panier vers l'API
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // il faut être connecté pour ajouter au panier
+        // Sécurité : l'utilisateur doit être connecté pour avoir un panier
         const token = localStorage.getItem(TOKEN_KEY);
         if (!token) {
             window.location.href = 'connexion.html';
@@ -143,7 +146,7 @@ function brancherAjoutPanier(idSoiree) {
         }
 
         messageAjout.hidden = true;
-        bouton.disabled = true; // évite le double clic pendant la requête
+        bouton.disabled = true; // Empêche les clics multiples pendant l'envoi
 
         try {
             const response = await fetch(`${API}/panier/lignes`, {
@@ -155,7 +158,8 @@ function brancherAjoutPanier(idSoiree) {
                 body: JSON.stringify({ idSoiree, tarif: tarifChoisi().value, quantite }),
             });
 
-            if (response.status === 401) { // token invalide ou expiré
+            // Si le token est expiré, on renvoie vers la connexion
+            if (response.status === 401) { 
                 localStorage.removeItem(TOKEN_KEY);
                 window.location.href = 'connexion.html';
                 return;
@@ -164,11 +168,14 @@ function brancherAjoutPanier(idSoiree) {
             let data = {};
             try { data = await response.json(); } catch {}
 
+            // Succès
             if (response.ok) {
                 const nb = data.panier.nbBillets;
                 afficherAjout(`Ajouté. Votre panier contient ${nb} billet${nb > 1 ? 's' : ''}.`, false);
-                quantite = 1;
+                quantite = 1; // On réinitialise la quantité à 1 après l'ajout
+                mettreAJourNavigation(); // Met à jour le (0) de la navbar (défini dans script.js)
             } else {
+                // Erreur (ex: stock insuffisant)
                 afficherAjout(data.error || data.message || `Erreur ${response.status}`, true);
             }
         } catch (err) {
@@ -180,5 +187,6 @@ function brancherAjoutPanier(idSoiree) {
         }
     });
 
+    // Initialisation de l'affichage au démarrage
     majAffichage();
 }
