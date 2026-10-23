@@ -24,44 +24,27 @@
             <a href="connexion.html" class="btn-primary">Se connecter</a>
         </nav>
     </header>
-    <main>
-
+<main>
     <section class="panier-section">
-    <h2>Panier & Validation</h2>
-    
-    <div id="message-panier" class="message message-error" hidden></div>
+        <h2>Votre panier</h2>
 
-    <div class="panier-layout">
-        <!-- COLONNE GAUCHE : La liste des billets -->
-        <div class="panier-gauche">
-            <h3>Vos billets</h3>
-            
-            <div id="liste-billets" class="liste-billets"></div>
+        <div id="message-panier" class="message message-error" hidden></div>
 
-            <div class="resume-total">
-                <span class="total-label">Total</span>
-                <span class="total-montant" id="total-prix">0,00 €</span>
-            </div>
-        </div>
+        <div class="panier-layout panier-layout-simple">
+            <div class="panier-gauche">
+                <h3>Vos billets</h3>
 
-        <!-- COLONNE DROITE : Le formulaire de paiement -->
-        <div class="panier-droite">
-            <h3>Paiement Sécurisé</h3>
-            
-            <form id="form-paiement" class="form-paiement">
-                <input type="text" id="cb-numero" placeholder="Numéro de carte..." required>
-                
-                <div class="form-row">
-                    <input type="text" id="cb-date" placeholder="MM/AA" required>
-                    <input type="text" id="cb-cvc" placeholder="CVC" required>
+                <div id="liste-billets" class="liste-billets"></div>
+
+                <div class="resume-total">
+                    <span class="total-label">Total</span>
+                    <span class="total-montant" id="total-prix">0,00 €</span>
                 </div>
 
-                <button type="submit" id="btn-payer" class="btn-payer" disabled>Payer</button>
-            </form>
+                <button type="button" id="btn-valider" class="btn-valider" disabled>Valider mon panier</button>
+            </div>
         </div>
-    </div>
-</section>
-
+    </section>
 </main>
 <script src="js/config.js"></script>
 <script src="js/script.js"></script>
