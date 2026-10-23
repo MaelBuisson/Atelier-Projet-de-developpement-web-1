@@ -777,3 +777,72 @@ main {
         }
     }
 }
+
+// ==========================================
+// 5. PAGE DE CONFIRMATION
+// ==========================================
+
+.confirmation-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    width: 100%;
+    padding: $gap-standard;
+    margin-top: 5rem;
+
+    .confirmation-card {
+        background-color: $bg-card;
+        padding: 3rem 2rem;
+        border-radius: $radius-card;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+        .icon-success {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: $text-secondary;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .commande-details {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            span {
+                color: $text-secondary;
+                font-size: 0.9rem;
+            }
+
+            strong {
+                color: $color-primary;
+                font-size: 1.2rem;
+                word-break: break-all;
+            }
+        }
+
+        .btn-action {
+            display: inline-block;
+            text-decoration: none;
+            width: 100%;
+        }
+    }
+}
