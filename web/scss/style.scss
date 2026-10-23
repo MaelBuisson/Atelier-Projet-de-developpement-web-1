@@ -1,5 +1,5 @@
 // ==========================================
-// 1. CONFIGURATION INITIALE & VARIABLES SASS
+//  CONFIGURATION INITIALE & VARIABLES SASS
 // ==========================================
 
 // Importation des modules pour centraliser le design (couleurs, espacements, breakpoints)
@@ -20,7 +20,7 @@ body {
 }
 
 // ==========================================
-// 2. EN-TÊTE GLOBAL (HEADER)
+//  EN-TÊTE GLOBAL (HEADER)
 // ==========================================
 .main-header {
     // Utilisation de Flexbox pour aligner le logo à gauche et la navigation à droite
@@ -138,7 +138,7 @@ body {
 
 
 // ==========================================
-// 3. LAYOUT PAGE D'ACCUEIL (Filtres + Grille)
+//  LAYOUT PAGE D'ACCUEIL (Filtres + Grille)
 // ==========================================
 main {
     // Approche Mobile-First : les éléments s'empilent par défaut (colonne)
@@ -239,7 +239,7 @@ main {
 }
 
 // ==========================================
-// 4. LAYOUT PAGE "DÉTAIL SOIRÉE"
+//  LAYOUT PAGE "DÉTAIL SOIRÉE"
 // ==========================================
 .soiree-container {
     display: flex;
@@ -466,6 +466,10 @@ main {
     }
 }
 
+// ==========================================
+// PAGES AUTHENTIFICATION & FORMULAIRES
+// ==========================================
+
 .auth-section {
     background-color: $bg-card;
     padding: 2rem;
@@ -556,6 +560,10 @@ main {
         }
     }
 }
+
+// ==========================================
+// PANIER & PAIEMENT
+// ==========================================
 
 .panier-section {
     padding: 2rem;
@@ -779,7 +787,7 @@ main {
 }
 
 // ==========================================
-// 5. PAGE DE CONFIRMATION
+//  PAGE DE CONFIRMATION
 // ==========================================
 
 .confirmation-section {
