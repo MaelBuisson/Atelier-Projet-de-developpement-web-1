@@ -11,6 +11,8 @@ use nrv\domain\entities\Soiree;
 use nrv\domain\entities\SoireeDansCommande;
 use nrv\domain\entities\Tarif;
 use nrv\domain\entities\Utilisateur;
+use nrv\domain\exceptions\CommandeNonPayable;
+use nrv\domain\exceptions\PlacesInsuffisantes;
 
 /**
  * Adaptateur de sortie : accès aux commandes (et au panier) stockés dans PostgreSQL.
@@ -116,6 +118,77 @@ class PgCommandeRepository implements CommandeRepository
                         'quantite' => $sdc->getQuantite()
                     ]);
                 }
+            }
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        $this->pdo->commit();
+    }
+
+    /**
+     * Paiement en une transaction : verrou sur la commande et sur ses soirées (SELECT … FOR UPDATE),
+     * vérification des places restantes, puis statut PAYEE et insertion des billets.
+     * Le verrou fait attendre un second paiement sur les mêmes soirées jusqu'au COMMIT du premier :
+     * il compte alors les billets déjà vendus et ne peut pas dépasser la capacité.
+     */
+    public function enregistrerPaiement(Commande $commande, array $billets): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            // la commande doit toujours être validée en base : protège contre un double paiement simultané
+            $stmt = $this->pdo->prepare('SELECT statut FROM commande WHERE id_commande = :id FOR UPDATE');
+            $stmt->execute(['id' => $commande->getId()]);
+            $statut = $stmt->fetchColumn();
+            if ($statut !== CommandeStatus::VALIDEE->name) {
+                throw new CommandeNonPayable($statut === false ? CommandeStatus::PANIER : CommandeStatus::fromName($statut));
+            }
+
+            $demandees = $commande->getPlacesParSoiree();
+            // ordre fixe des verrous (par id) : deux paiements ne peuvent pas s'attendre l'un l'autre (interblocage)
+            ksort($demandees);
+            $ids = array_keys($demandees);
+            $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+
+            $stmt = $this->pdo->prepare(
+                "SELECT id_soiree, nom, nb_place FROM soiree WHERE id_soiree IN ($placeholders) ORDER BY id_soiree FOR UPDATE"
+            );
+            $stmt->execute($ids);
+            $soirees = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $soirees[$row['id_soiree']] = $row;
+            }
+
+            // places déjà vendues : un billet émis = une place occupée
+            $stmt = $this->pdo->prepare(
+                "SELECT id_soiree, COUNT(*) AS vendues FROM billet WHERE id_soiree IN ($placeholders) GROUP BY id_soiree"
+            );
+            $stmt->execute($ids);
+            $vendues = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+            foreach ($demandees as $idSoiree => $nombre) {
+                $restantes = (int) $soirees[$idSoiree]['nb_place'] - (int) ($vendues[$idSoiree] ?? 0);
+                if ($nombre > $restantes) {
+                    throw new PlacesInsuffisantes($soirees[$idSoiree]['nom'], max(0, $restantes), $nombre);
+                }
+            }
+
+            $stmt = $this->pdo->prepare('UPDATE commande SET statut = :statut WHERE id_commande = :id');
+            $stmt->execute(['statut' => $commande->getStatus()->name, 'id' => $commande->getId()]);
+
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO billet (token, id_soiree, id_commande, nom_tarif)
+                VALUES (:token, :id_soiree, :id_commande, :nom_tarif)'
+            );
+            foreach ($billets as $billet) {
+                $stmt->execute([
+                    'token' => $billet->getToken(),
+                    'id_soiree' => $billet->getSoiree()->getId(),
+                    'id_commande' => $billet->getIdCommande(),
+                    'nom_tarif' => $billet->getTarif()->getNom(),
+                ]);
             }
         } catch (\Throwable $e) {
             $this->pdo->rollBack();

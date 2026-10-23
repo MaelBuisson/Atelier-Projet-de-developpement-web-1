@@ -127,16 +127,46 @@ class Commande
     }
 
     /**
-     * Marque la commande comme payée (paiement simulé).
+     * Marque la commande comme payée (paiement simulé) et crée ses billets :
+     * un billet par place, donc autant de billets que la quantité de chaque ligne.
+     * Les places disponibles sont vérifiées à l'enregistrement, dans la même transaction
+     * que l'écriture des billets (CommandeRepository::enregistrerPaiement).
      *
+     * @return Billet[] les billets de la commande, chacun avec un token aléatoire
      * @throws CommandeNonPayable si la commande n'a pas été validée
      */
-    public function payer(): void
+    public function payer(): array
     {
         if ($this->status !== CommandeStatus::VALIDEE) {
             throw new CommandeNonPayable($this->status);
         }
         $this->status = CommandeStatus::PAYEE;
+
+        $billets = [];
+        foreach ($this->soireesDansCommande as $ligne) {
+            for ($i = 0; $i < $ligne->getQuantite(); $i++) {
+                $billets[] = Billet::nouveau($this->idCommande, $ligne->getSoiree(), $ligne->getTarif(), $this->utilisateur);
+            }
+        }
+
+        return $billets;
+    }
+
+    /**
+     * Nombre de billets demandés par soirée (toutes lignes et tous tarifs confondus) :
+     * c'est ce qu'il faut comparer aux places restantes de chaque soirée.
+     *
+     * @return array<string, int> id de soirée => nombre de places
+     */
+    public function getPlacesParSoiree(): array
+    {
+        $places = [];
+        foreach ($this->soireesDansCommande as $ligne) {
+            $id = $ligne->getSoiree()->getId();
+            $places[$id] = ($places[$id] ?? 0) + $ligne->getQuantite();
+        }
+
+        return $places;
     }
 
     public function getId(): string

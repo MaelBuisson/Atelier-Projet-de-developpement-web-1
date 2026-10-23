@@ -122,13 +122,34 @@ class CommandeService implements CommandeServiceInterface
      */
     public function getCommande(string $idUtilisateur, string $idCommande): CommandeDTO
     {
+        return CommandeDTO::fromEntity($this->commandeDe($idUtilisateur, $idCommande));
+    }
+
+    /**
+     * Paiement simulé (aucune donnée bancaire) : le domaine passe la commande au statut PAYEE
+     * et crée un billet par place ; le repository vérifie les places et enregistre le tout
+     * dans une seule transaction. En cas de refus, la commande reste validée.
+     */
+    public function payer(string $idUtilisateur, string $idCommande): CommandeDTO
+    {
+        $commande = $this->commandeDe($idUtilisateur, $idCommande);
+
+        $billets = $commande->payer();
+
+        $this->commandeRepository->enregistrerPaiement($commande, $billets);
+
+        return CommandeDTO::fromEntity($commande);
+    }
+
+    // commande inexistante ou d'un autre utilisateur : même réponse, pour ne pas révéler qu'elle existe
+    private function commandeDe(string $idUtilisateur, string $idCommande): Commande
+    {
         $commande = $this->commandeRepository->findById($idCommande);
 
-        // commande inexistante ou d'un autre utilisateur : même réponse, pour ne pas révéler qu'elle existe
         if ($commande === null || $commande->getUtilisateur()->getId() !== $idUtilisateur) {
             throw new CommandeNotFound($idCommande);
         }
 
-        return CommandeDTO::fromEntity($commande);
+        return $commande;
     }
 }

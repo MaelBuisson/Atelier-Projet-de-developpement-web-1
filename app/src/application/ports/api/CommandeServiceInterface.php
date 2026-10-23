@@ -50,4 +50,13 @@ interface CommandeServiceInterface
      * @throws \nrv\domain\exceptions\CommandeNotFound si elle n'existe pas ou appartient à un autre utilisateur
      */
     public function getCommande(string $idUtilisateur, string $idCommande): CommandeDTO;
+
+    /**
+     * Paie (paiement simulé) une commande validée de l'utilisateur et crée ses billets, un par place.
+     *
+     * @throws \nrv\domain\exceptions\CommandeNotFound si elle n'existe pas ou appartient à un autre utilisateur
+     * @throws \nrv\domain\exceptions\CommandeNonPayable si elle n'est pas au statut VALIDEE
+     * @throws \nrv\domain\exceptions\PlacesInsuffisantes si une soirée n'a plus assez de places
+     */
+    public function payer(string $idUtilisateur, string $idCommande): CommandeDTO;
 }
