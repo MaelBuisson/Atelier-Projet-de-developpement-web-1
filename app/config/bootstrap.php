@@ -38,7 +38,7 @@ $app = AppFactory::createFromContainer($container);
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 // détail des erreurs internes affiché uniquement si DISPLAY_ERROR_DETAILS=true dans config/.env (développement)
-$displayErrorDetails = true;
+$displayErrorDetails = filter_var($_ENV['DISPLAY_ERROR_DETAILS'] ?? false, FILTER_VALIDATE_BOOL);
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
 $errorHandler = $errorMiddleware->getDefaultErrorHandler();
 $errorHandler->forceContentType('application/json');
