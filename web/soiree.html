@@ -15,9 +15,9 @@
         <div class="logo">NRV</div>
 
         <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
         </button>
 
         <nav id="main-nav">
@@ -49,25 +49,30 @@
             <!-- Zone d'action (Call-to-Action) et Tarification -->
             <div class="tarifs-box">
                 {{#if tarifs.length}}
-                <form id="form-ajout" class="form-ajout">
-                    <div class="tarifs-choix" role="radiogroup" aria-label="Choisir un tarif">
-                        {{#each tarifs}}
-                        <label class="tarif-choix">
-                            <input type="radio" name="ajout-tarif" value="{{nom}}" data-prix="{{this.prix}}" {{#if @first}}checked{{/if}}>
-                            <span class="tarif-badge">{{nomTarif nom}} : {{prix prix}}</span>
-                        </label>
-                        {{/each}}
-                    </div>
+                <form id="form-ajout" class="form-billetterie">
+    <div id="ajout-message" class="message" hidden></div>
+    
+    <div class="tarifs-options">
+        {{#each tarifs}}
+        <label class="tarif-radio">
+            <!-- @first permet de cocher automatiquement le premier tarif de la liste -->
+            <input type="radio" name="ajout-tarif" value="{{this.nom}}" {{#if @first}}checked{{/if}}>
+            <span>{{nomTarif this.nom}} : <strong>{{prix this.prix}}</strong></span>
+        </label>
+        {{/each}}
+    </div>
 
-                    <div class="ajout-actions">
-                        <div class="quantite-stepper">
-                            <button type="button" id="qte-moins" aria-label="Retirer un billet">−</button>
-                            <output id="qte-valeur">1</output>
-                            <button type="button" id="qte-plus" aria-label="Ajouter un billet">+</button>
-                        </div>
-                        <button type="submit" id="btn-ajout" class="btn-ajouter-panier">🛒 Ajouter au panier</button>
-                    </div>
-                </form>
+    <div class="quantite-container">
+        <!-- Les IDs correspondent exactement à ton const moins, const plus, const valeur -->
+        <button type="button" class="btn-qty" id="qte-moins" disabled>-</button>
+        <span id="qte-valeur" class="qty-display">1</span>
+        <button type="button" class="btn-qty" id="qte-plus">+</button>
+    </div>
+
+    <button type="submit" id="btn-ajout" class="btn-action">
+        🛒 Ajouter 1 billet
+    </button>
+</form>
                 <p id="ajout-message" hidden></p>
                 {{else}}
                 <span class="tarif-badge">Billetterie bientôt ouverte</span>
@@ -111,4 +116,5 @@
     <script src="js/config.js"></script>
     <script src="js/soiree.js"></script>
 </body>
+
 </html>
