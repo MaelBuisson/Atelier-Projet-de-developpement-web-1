@@ -59,7 +59,7 @@ final class ContainerConfig
                 ->constructor(\DI\get(UtilisateurRepository::class), \DI\get(TokenProvider::class)),
 
             CommandeServiceInterface::class => \DI\create(CommandeService::class)
-                ->constructor(\DI\get(CommandeRepository::class), \DI\get(UtilisateurRepository::class)),
+                ->constructor(\DI\get(CommandeRepository::class), \DI\get(UtilisateurRepository::class), \DI\get(SoireeRepository::class), \DI\get(TarifRepository::class)),
 
             AuthMiddleware::class => function (ContainerInterface $c) {
                 return new AuthMiddleware($_ENV['JWT_SECRET'], new \Slim\Psr7\Factory\ResponseFactory());
