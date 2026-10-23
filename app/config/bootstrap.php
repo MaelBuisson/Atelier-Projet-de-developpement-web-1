@@ -17,6 +17,8 @@ use nrv\adapters\controllers\actions\ListerSoireesAction;
 use nrv\adapters\controllers\actions\GetPanierAction;
 use nrv\adapters\controllers\actions\AjouterAuPanierAction;
 use nrv\adapters\controllers\actions\SupprimerDuPanierAction;
+use nrv\adapters\controllers\actions\ValiderPanierAction;
+use nrv\adapters\controllers\actions\GetCommandeAction;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
@@ -78,6 +80,14 @@ $app->group('/panier', function (RouteCollectorProxy $group) {
         ->setName('panier-ajouter');
     $group->delete('/lignes/{idLigne}', SupprimerDuPanierAction::class)
         ->setName('panier-supprimer');
+    $group->post('/validation', ValiderPanierAction::class)
+        ->setName('panier-valider');
+})->add(AuthMiddleware::class);
+
+// commandes de l'utilisateur connecté : tout le groupe est protégé par le token
+$app->group('/commandes', function (RouteCollectorProxy $group) {
+    $group->get('/{id}', GetCommandeAction::class)
+        ->setName('commande-detail');
 })->add(AuthMiddleware::class);
 
 // CORS : options pour les requêtes preflight
