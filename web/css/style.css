@@ -1,3 +1,4 @@
+@charset "UTF-8";
 * {
   box-sizing: border-box;
   margin: 0;
@@ -234,43 +235,105 @@ main {
   color: #F5F5F5;
 }
 
-.tarifs-box {
+.form-billetterie {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  border-top: 1px solid #333;
-  padding-top: 1.5rem;
-  margin-top: 2rem;
-}
-.tarifs-box .tarifs-badges {
-  display: flex;
   gap: 1rem;
-  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  /* Options de tarifs (barres gris foncé) */
 }
-.tarifs-box .tarif-badge {
-  background-color: #333;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+.form-billetterie .tarifs-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.form-billetterie .tarif-radio {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #ffffff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  background-color: #222222; /* Gris foncé de la maquette */
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+.form-billetterie .tarif-radio:hover {
+  background-color: #333333;
+}
+.form-billetterie .tarif-radio input[type=radio] {
+  margin: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  accent-color: #ffffff; /* Point blanc à l'intérieur */
+}
+.form-billetterie .tarif-radio span {
+  flex: 1;
+}
+.form-billetterie {
+  /* Bloc Quantité (Unifié en un seul rectangle) */
+}
+.form-billetterie .quantite-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #222222; /* Même gris que les tarifs */
+  border-radius: 4px;
+  padding: 0.25rem;
+  width: 130px;
+  margin-top: 0.5rem;
+}
+.form-billetterie .quantite-container .btn-qty {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.2rem;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+.form-billetterie .quantite-container .btn-qty:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.form-billetterie .quantite-container .btn-qty:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.form-billetterie .quantite-container {
+  /* Remplace le style de l'input par le style du span */
+}
+.form-billetterie .quantite-container .qty-display {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  width: 40px;
+}
+
+/* Bouton "Ajouter 1 billet" (Gris clair) */
+.btn-action {
+  width: 100%;
+  background-color: #d32f2f; /* Gris clair */
+  color: #000000; /* Texte noir */
+  border: none;
+  padding: 0.75rem;
   font-weight: bold;
   font-size: 1rem;
-}
-.tarifs-box .btn-ajouter-panier {
-  background-color: #E63946;
-  color: #fff;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1.1rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: opacity 0.3s ease;
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin-top: 0.5rem;
+  transition: background-color 0.2s ease;
 }
-.tarifs-box .btn-ajouter-panier:hover {
-  opacity: 0.8;
+.btn-action:hover {
+  background-color: #ffffff;
 }
 
 .spectacles-list h2 {
