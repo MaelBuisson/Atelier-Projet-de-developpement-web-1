@@ -501,10 +501,31 @@ main {
   color: #E63946;
   text-decoration: underline;
 }
-.panier-section .billet-item span:last-child {
+.panier-section .billet-item .prix-action-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.panier-section .billet-item .prix-action-container .prix {
   font-weight: bold;
   color: #ffffff;
   white-space: nowrap;
+}
+.panier-section .billet-item .prix-action-container .btn-supprimer-ligne {
+  background: none;
+  border: none;
+  color: #ff4757;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.panier-section .billet-item .prix-action-container .btn-supprimer-ligne:hover:not(:disabled) {
+  color: rgb(255, 20, 40.4347826087);
+  transform: scale(1.2);
+}
+.panier-section .billet-item .prix-action-container .btn-supprimer-ligne:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .panier-section .resume-total {
   display: flex;

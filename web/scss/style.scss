@@ -596,11 +596,35 @@ main {
             }
         }
 
+        .prix-action-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
 
-        span:last-child {
-            font-weight: bold;
-            color: #ffffff;
-            white-space: nowrap;
+            .prix {
+                font-weight: bold;
+                color: #ffffff;
+                white-space: nowrap;
+            }
+
+            .btn-supprimer-ligne {
+                background: none;
+                border: none;
+                color: #ff4757;
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: transform 0.2s ease, color 0.2s ease;
+
+                &:hover:not(:disabled) {
+                    color: darken(#ff4757, 10%);
+                    transform: scale(1.2);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
         }
     }
 
