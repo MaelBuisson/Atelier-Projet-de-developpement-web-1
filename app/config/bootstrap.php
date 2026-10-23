@@ -24,6 +24,8 @@ use nrv\adapters\controllers\middlewares\AuthMiddleware;
 use nrv\adapters\controllers\actions\GetBilletAction;
 use nrv\adapters\controllers\actions\ListerCommandesAction;
 use nrv\adapters\controllers\actions\GetBilletsCommandeAction;
+use nrv\adapters\controllers\actions\GetJaugesAction;
+use nrv\adapters\controllers\middlewares\AdminMiddleware;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -102,6 +104,10 @@ $app->group('/commandes', function (RouteCollectorProxy $group) {
 
 $app->get('/billets/{token}', GetBilletAction::class)->setName('get_billet')->add(AuthMiddleware::class);
 
+$app->group('/backoffice', function (RouteCollectorProxy $group) {
+    $group->get('/jauges', GetJaugesAction::class)
+        ->setName('backoffice-jauges');
+})->add(AdminMiddleware::class)->add(AuthMiddleware::class);
 // CORS : options pour les requêtes preflight
 $app->options('/{routes:.+}', function (Request $request, Response $response): Response {
     return $response;

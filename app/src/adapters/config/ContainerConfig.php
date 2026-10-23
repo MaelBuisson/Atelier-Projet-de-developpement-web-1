@@ -33,6 +33,12 @@ use nrv\application\ports\api\BilletServiceInterface;
 use nrv\application\ports\spi\BilletRepository;
 use nrv\application\usecases\BilletService;
 use nrv\adapters\persistence\PgBilletRepository;
+use nrv\adapters\controllers\middlewares\AdminMiddleware;
+use nrv\application\usecases\BackofficeService;
+use nrv\application\ports\api\BackofficeServiceInterface;
+use nrv\adapters\persistence\PgJaugeRepository;
+use nrv\application\ports\spi\JaugeRepository;
+
 /**
  * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
  * (interface) à son implémentation. Les actions et les services ne reçoivent que des interfaces.
@@ -69,6 +75,13 @@ final class ContainerConfig
                 return new AuthMiddleware($_ENV['JWT_SECRET'], new \Slim\Psr7\Factory\ResponseFactory());
             },
 
+            AdminMiddleware::class => function () {
+                return new AdminMiddleware(new \Slim\Psr7\Factory\ResponseFactory());
+            },
+            BackofficeServiceInterface::class => \DI\create(BackofficeService::class)
+                ->constructor(\DI\get(JaugeRepository::class)),
+
+
             TokenProvider::class => function () {
                 return new JwtTokenProvider($_ENV['JWT_SECRET']);
             },
@@ -98,6 +111,10 @@ final class ContainerConfig
                 ->constructor(\DI\get('nrv.pdo')),
             BilletRepository::class => \DI\create(PgBilletRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
+
+            JaugeRepository::class => \DI\create(PgJaugeRepository::class)
+                ->constructor(\DI\get('nrv.pdo')),
+
         ]);
         return $builder->build();
     }
