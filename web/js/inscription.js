@@ -27,6 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (reponse.status === 201) {
                     successDiv.hidden = false;
                     registerForm.reset();
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                    
                 } else if (reponse.status === 400 || reponse.status === 409) {
                     errorDiv.textContent = data.error; 
                     errorDiv.hidden = false;
