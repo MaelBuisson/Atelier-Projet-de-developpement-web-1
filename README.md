@@ -5,6 +5,12 @@ SAE « Atelier-projet de développement web 1 » (BUT 3 Informatique DWM, IUT Na
 Application de vente de billets en ligne : programme du festival, détail des soirées,
 filtrage par date et par style, panier et billets.
 
+## Auteurs
+
+- Leandre Aimé--Cabocel
+- Walid Bouaoukel
+- Mael Buisson
+
 | Partie | Dossier | Technologies | Documentation |
 |--------|---------|--------------|---------------|
 | API (backend) | [`app/`](app/) | PHP 8.5, Slim 4, PHP-DI, PostgreSQL 18, Pest | [app/README.md](app/README.md) |

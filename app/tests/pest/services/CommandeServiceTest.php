@@ -1,0 +1,195 @@
+<?php
+
+/*
+ * Tests des use cases du panier (CommandeService) : voir son panier, ajouter et retirer des billets.
+ * Les repositories sont remplacés par des fakes : le service ne dépend que des ports SPI.
+ */
+
+use nrv\application\dto\PanierDTO;
+use nrv\application\usecases\CommandeService;
+use nrv\domain\entities\Commande;
+use nrv\domain\entities\SoireeDansCommande;
+use nrv\domain\entities\Tarif;
+use nrv\domain\entities\Utilisateur;
+use nrv\domain\exceptions\QuantiteInvalide;
+use nrv\domain\exceptions\SoireeDansCommandeNotFound;
+use nrv\domain\exceptions\SoireeNotFound;
+use nrv\domain\exceptions\TarifNotFound;
+use nrv\domain\exceptions\UserNotFound;
+use tests\pest\fakes\FakeCommandeRepository;
+use tests\pest\fakes\FakeSoireeRepository;
+use tests\pest\fakes\FakeTarifRepository;
+use tests\pest\fakes\FakeUtilisateurRepository;
+
+beforeEach(function () {
+    $this->jean = new Utilisateur('utilisateur-jean', 'jean@mail.fr', 'Dupont', 'Jean', 'hash', Utilisateur::ROLE_CLIENT);
+    $this->marie = new Utilisateur('utilisateur-marie', 'marie@mail.fr', 'Martin', 'Marie', 'hash', Utilisateur::ROLE_CLIENT);
+
+    $this->utilisateurs = new FakeUtilisateurRepository();
+    $this->utilisateurs->utilisateurs = [$this->jean, $this->marie];
+
+    $rock = creerSoiree('soiree-rock', 'Rock Night');
+    $metal = creerSoiree('soiree-metal', 'Metal Night');
+
+    // Jean a un panier de 3 billets ; Marie n'a pas encore de panier
+    $panierJean = new Commande('commande-jean', new DateTimeImmutable('2027-06-01 10:00'), $this->jean);
+    $panierJean->ajouterSoiree(new SoireeDansCommande('L1', $rock, new Tarif('normal', 35.0), 2));
+    $panierJean->ajouterSoiree(new SoireeDansCommande('L2', $rock, new Tarif('reduit', 25.0), 1));
+
+    // les fakes sont gardés dans $this : les tests lisent ensuite ce qui a été enregistré (saveCalls, getPanier)
+    $this->commandes = new FakeCommandeRepository([$panierJean]);
+    $this->soirees = new FakeSoireeRepository([$metal, $rock]);
+    // prix « en base » : le réduit rock vaut 17,5 € ici, alors que la ligne L2 de Jean a été créée à 25 €.
+    // Cette différence permet de vérifier que le service prend le prix du repository.
+    $this->tarifs = new FakeTarifRepository([
+        'soiree-rock' => [new Tarif('normal', 35.0), new Tarif('reduit', 17.5)],
+        'soiree-metal' => [new Tarif('normal', 50.0), new Tarif('reduit', 25.0)],
+    ]);
+
+    $this->service = new CommandeService($this->commandes, $this->utilisateurs, $this->soirees, $this->tarifs);
+});
+
+// ── getPanier ─
+
+it("retourne le panier existant de l'utilisateur", function () {
+    $panier = $this->service->getPanier('utilisateur-jean');
+
+    expect($panier)->toBeInstanceOf(PanierDTO::class)
+        ->and(array_column($panier->lignes, 'idLigne'))->toBe(['L1', 'L2'])
+        ->and($panier->nbBillets)->toBe(3)
+        ->and($panier->montantTotal)->toBe(95.0);
+});
+
+it("retourne un panier vide à un utilisateur qui n'en a pas encore", function () {
+    $panier = $this->service->getPanier('utilisateur-marie');
+
+    expect($panier->lignes)->toBe([])
+        ->and($panier->nbBillets)->toBe(0)
+        ->and($panier->montantTotal)->toBe(0.0);
+});
+
+it("ne renvoie jamais le panier d'un autre utilisateur", function () {
+    // Marie n'a pas de panier : elle ne doit pas recevoir celui de Jean
+    expect($this->service->getPanier('utilisateur-marie')->lignes)->toBe([]);
+});
+
+it("lève UserNotFound si l'utilisateur sans panier n'existe plus", function () {
+    $this->service->getPanier('utilisateur-supprime');
+})->throws(UserNotFound::class);
+
+it("n'enregistre rien quand on consulte le panier", function () {
+    // un panier vide renvoyé par getPanier n'est créé en base qu'au premier ajout
+    $this->service->getPanier('utilisateur-marie');
+
+    expect($this->commandes->saveCalls)->toBe(0)
+        ->and($this->commandes->getPanier('utilisateur-marie'))->toBeNull();
+});
+
+// ── ajouterAuPanier ─
+
+it('crée et enregistre le panier au premier ajout', function () {
+    $panier = $this->service->ajouterAuPanier('utilisateur-marie', 'soiree-metal', 'normal', 2);
+
+    expect($panier->lignes)->toHaveCount(1)
+        ->and($panier->lignes[0]['idSoiree'])->toBe('soiree-metal')
+        ->and($panier->lignes[0]['tarif'])->toBe('normal')
+        ->and($panier->nbBillets)->toBe(2)
+        ->and($panier->montantTotal)->toBe(100.0)
+        ->and($this->commandes->saveCalls)->toBe(1)
+        ->and($this->commandes->getPanier('utilisateur-marie'))->not->toBeNull();
+});
+
+it("ajoute la quantité à la ligne existante pour la même soirée et le même tarif", function () {
+    // Jean a déjà 2 billets normal pour la soirée rock (ligne L1)
+    $panier = $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-rock', 'normal', 1);
+
+    expect(array_column($panier->lignes, 'idLigne'))->toBe(['L1', 'L2'])
+        ->and($panier->lignes[0]['quantite'])->toBe(3)
+        ->and($panier->nbBillets)->toBe(4)
+        ->and($this->commandes->saveCalls)->toBe(1);
+});
+
+it('crée une nouvelle ligne pour une autre soirée', function () {
+    $panier = $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-metal', 'reduit', 1);
+
+    expect($panier->lignes)->toHaveCount(3)
+        ->and($panier->nbBillets)->toBe(4)
+        ->and($panier->montantTotal)->toBe(120.0);
+});
+
+it('utilise le prix du tarif enregistré, jamais un autre prix', function () {
+    // réduit rock : 17,5 € dans le repository des tarifs
+    $panier = $this->service->ajouterAuPanier('utilisateur-marie', 'soiree-rock', 'reduit', 2);
+
+    expect($panier->lignes[0]['sousTotal'])->toBe(35.0)
+        ->and($panier->montantTotal)->toBe(35.0);
+});
+
+it("lève SoireeNotFound pour une soirée inexistante, sans rien enregistrer", function () {
+    expect(fn () => $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-inconnue', 'normal', 1))
+        ->toThrow(SoireeNotFound::class);
+
+    expect($this->commandes->saveCalls)->toBe(0);
+});
+
+it("lève TarifNotFound pour un tarif inexistant, sans rien enregistrer", function () {
+    expect(fn () => $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-rock', 'vip', 1))
+        ->toThrow(TarifNotFound::class);
+
+    expect($this->commandes->saveCalls)->toBe(0);
+});
+
+it("lève QuantiteInvalide pour une quantité nulle ou négative, sans rien enregistrer", function () {
+    expect(fn () => $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-rock', 'normal', 0))
+        ->toThrow(QuantiteInvalide::class);
+    expect(fn () => $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-rock', 'normal', -3))
+        ->toThrow(QuantiteInvalide::class);
+
+    expect($this->commandes->saveCalls)->toBe(0);
+});
+
+it("laisse remonter l'erreur de la base de données", function () {
+    // panne simulée : le service ne doit pas avaler l'exception ni renvoyer un panier comme si tout allait bien
+    $this->commandes->saveThrows = new RuntimeException('base indisponible');
+
+    $this->service->ajouterAuPanier('utilisateur-jean', 'soiree-rock', 'normal', 1);
+})->throws(RuntimeException::class, 'base indisponible');
+
+// ── supprimerDuPanier ─
+
+it('retire la ligne qui ne contient plus de billet et enregistre', function () {
+    // L2 ne contient qu'un billet : la ligne disparaît
+    $panier = $this->service->supprimerDuPanier('utilisateur-jean', 'L2');
+
+    expect(array_column($panier->lignes, 'idLigne'))->toBe(['L1'])
+        ->and($panier->nbBillets)->toBe(2)
+        ->and($panier->montantTotal)->toBe(70.0)
+        ->and($this->commandes->saveCalls)->toBe(1);
+});
+
+it("retire un seul billet d'une ligne qui en contient plusieurs", function () {
+    // L1 contient 2 billets à 35 € : il en reste un
+    $panier = $this->service->supprimerDuPanier('utilisateur-jean', 'L1');
+
+    expect(array_column($panier->lignes, 'idLigne'))->toBe(['L1', 'L2'])
+        ->and($panier->lignes[0]['quantite'])->toBe(1)
+        ->and($panier->montantTotal)->toBe(60.0);
+});
+
+it('lève SoireeDansCommandeNotFound pour une ligne absente du panier', function () {
+    expect(fn () => $this->service->supprimerDuPanier('utilisateur-jean', 'ligne-inconnue'))
+        ->toThrow(SoireeDansCommandeNotFound::class);
+
+    expect($this->commandes->saveCalls)->toBe(0);
+});
+
+it("ne permet pas de retirer la ligne du panier d'un autre utilisateur", function () {
+    // Marie connaît l'identifiant L1, mais cette ligne appartient au panier de Jean
+    expect(fn () => $this->service->supprimerDuPanier('utilisateur-marie', 'L1'))
+        ->toThrow(SoireeDansCommandeNotFound::class);
+
+    $panierJean = $this->commandes->getPanier('utilisateur-jean');
+
+    expect($this->commandes->saveCalls)->toBe(0)
+        ->and($panierJean->getSoireesDansCommande()[0]->getQuantite())->toBe(2);
+});

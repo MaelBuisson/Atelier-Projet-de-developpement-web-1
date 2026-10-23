@@ -12,6 +12,10 @@ use nrv\domain\entities\SoireeDansCommande;
 use nrv\domain\entities\Tarif;
 use nrv\domain\entities\Utilisateur;
 
+/**
+ * Adaptateur de sortie : accès aux commandes (et au panier) stockés dans PostgreSQL.
+ * Le statut est enregistré sous forme de texte : le nom du cas de CommandeStatus ('PANIER', 'VALIDEE', 'PAYEE').
+ */
 class PgCommandeRepository implements CommandeRepository
 {
     private PDO $pdo;
@@ -21,58 +25,170 @@ class PgCommandeRepository implements CommandeRepository
         $this->pdo = $pdo;
     }
 
+    /**
+     * Retourne le panier (commande au statut PANIER) de l'utilisateur avec ses lignes,
+     * ou null s'il n'en a pas encore.
+     */
     public function getPanier(string $idUtilisateur): ?Commande
     {
+        // une seule requête : la commande, son utilisateur, et pour chaque ligne la soirée et le tarif.
+        // LEFT JOIN sur les lignes : un panier sans ligne donne une seule rangée, colonnes de ligne à NULL.
+        // Les alias évitent les collisions de noms (nom, date, horaire existent dans plusieurs tables).
         $stmt = $this->pdo->prepare(
-            "SELECT c.id_commande, c.date_creation,
-                    sdc.id_lignes, sdc.quantite,
-                    so.id_soiree, so.nom AS soiree_nom, so.date AS soiree_date, so.thematique AS soiree_thematique,
-                    so.nb_place AS nb_places, so.horaire AS soiree_horaires, so.lieu AS soiree_lieu,
+            'SELECT c.id_commande, c.date_creation,
+                    u.id_utilisateur, u.email, u.nom AS utilisateur_nom, u.prenom AS utilisateur_prenom,
+                    u.password AS utilisateur_password, u.role AS utilisateur_role,
+                    sdc.id_ligne, sdc.quantite,
+                    so.id_soiree, so.nom AS soiree_nom, so.thematique AS soiree_thematique,
+                    so.date AS soiree_date, so.horaire AS soiree_horaire,
+                    so.lieu AS soiree_lieu, so.nb_place AS soiree_nb_place,
                     t.nom AS tarif_nom, t.prix AS tarif_prix
              FROM commande c
+             JOIN utilisateur u ON u.id_utilisateur = c.id_utilisateur
              LEFT JOIN soiree_dans_commande sdc ON sdc.id_commande = c.id_commande
              LEFT JOIN soiree so ON so.id_soiree = sdc.id_soiree
              LEFT JOIN tarif t ON t.id_soiree = sdc.id_soiree AND t.nom = sdc.nom_tarif
              WHERE c.id_utilisateur = :id_utilisateur AND c.statut = :statut
-             ORDER BY sdc.id_lignes"
+             ORDER BY so.date, so.horaire, t.nom'
         );
         $stmt->execute([
             'id_utilisateur' => $idUtilisateur,
-            'statut' => CommandeStatus::PANIER->name, // 'PANIER'
+            'statut' => CommandeStatus::PANIER->name,
         ]);
-        $rows = $stmt->fetchAll($this->pdo::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($rows === []) {
             return null;
         }
 
+        $premiere = $rows[0];
         $commande = new Commande(
-            $rows[0]['id_commande'],
-            new DateTimeImmutable($rows[0]['date_creation']),
-            new Utilisateur($idUtilisateur, '', '', '', '')
+            $premiere['id_commande'],
+            new DateTimeImmutable($premiere['date_creation']),
+            new Utilisateur(
+                $premiere['id_utilisateur'],
+                $premiere['email'],
+                $premiere['utilisateur_nom'],
+                $premiere['utilisateur_prenom'],
+                $premiere['utilisateur_password'],
+                (int) $premiere['utilisateur_role']
+            )
         );
 
+        // soirées déjà construites, indexées par id : les lignes d'une même soirée partagent le même objet
+        $soirees = [];
+
         foreach ($rows as $row) {
-            if ($row['id_lignes'] === null) {
+            // panier sans ligne : la rangée ne contient que la commande
+            if ($row['id_ligne'] === null) {
                 continue;
             }
 
+            $soirees[$row['id_soiree']] ??= new Soiree(
+                $row['id_soiree'],
+                $row['soiree_nom'],
+                $row['soiree_thematique'],
+                new DateTimeImmutable($row['soiree_date']),
+                // colonne TIME : '!' fixe la date au 1970-01-01 au lieu de la date du jour
+                DateTimeImmutable::createFromFormat('!H:i:s', $row['soiree_horaire']),
+                $row['soiree_lieu'],
+                (int) $row['soiree_nb_place']
+            );
+
             $commande->ajouterSoiree(new SoireeDansCommande(
-                $row['id_lignes'],
-                new Soiree(
-                    $row['id_soiree'],
-                    $row['soiree_nom'],
-                    $row['soiree_thematique'],
-                    new DateTimeImmutable($row['soiree_date']),
-                    new DateTimeImmutable($row['soiree_horaires']),
-                    $row['soiree_lieu'],
-                    (int) $row['soiree_nb_places']
-                ),
+                $row['id_ligne'],
+                $soirees[$row['id_soiree']],
                 new Tarif($row['tarif_nom'], (float) $row['tarif_prix']),
                 (int) $row['quantite']
             ));
         }
 
         return $commande;
+    }
+
+    /**
+     * Enregistre la commande et ses lignes : insertion si elle est nouvelle, mise à jour sinon.
+     * Tout se fait dans une transaction : en cas d'erreur, la base reste dans son état précédent.
+     */
+    public function save(Commande $commande): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            // upsert : date et utilisateur ne changent jamais, seuls le statut et le montant sont mis à jour
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO commande (id_commande, date_creation, montant_total, statut, id_utilisateur)
+                VALUES (:id_commande, :date_creation, :montant_total, :statut, :id_utilisateur)
+                ON CONFLICT (id_commande)
+                DO UPDATE SET statut = EXCLUDED.statut, montant_total = EXCLUDED.montant_total
+                "
+            );
+            $stmt->execute([
+                'id_commande' => $commande->getId(),
+                'date_creation' => $commande->getDateCreation()->format('Y-m-d H:i:s'),
+                'montant_total' => $commande->getMontantTotal(),
+                'statut' => $commande->getStatus()->name,
+                'id_utilisateur' => $commande->getUtilisateur()->getId()
+            ]);
+
+            $sdcs = $commande->getSoireesDansCommande();
+
+            // suppression des lignes retirées du panier, AVANT les upserts : si une soirée/tarif est
+            // supprimée puis rajoutée avec un nouvel id, l'ancienne ligne bloquerait la contrainte UNIQUE.
+            // Panier vide : pas de NOT IN (NOT IN () est une erreur SQL), toutes les lignes sont supprimées.
+            $notIn = '';
+            $params = [$commande->getId()];
+
+            if ($sdcs) {
+                $ids = array_map(
+                    fn($sdc) => $sdc->getIdLigne(),
+                    $sdcs
+                );
+
+                // un ? par identifiant : une liste ne peut pas être liée à un seul paramètre
+                $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+
+                $notIn = "AND id_ligne NOT IN ($placeholders)";
+
+                $params = array_merge(
+                    $params,
+                    $ids
+                );
+            }
+
+            $stmt = $this->pdo->prepare(
+                "DELETE FROM soiree_dans_commande
+                WHERE id_commande = ? $notIn
+                "
+            );
+
+            $stmt->execute($params);
+
+            // upsert des lignes : requête préparée une seule fois, exécutée pour chaque ligne
+            if ($sdcs) {
+                $stmt = $this->pdo->prepare(
+                    'INSERT INTO soiree_dans_commande (id_ligne, id_commande, id_soiree, nom_tarif, quantite)
+                    VALUES (:id_ligne, :id_commande, :id_soiree, :nom_tarif, :quantite)
+                    ON CONFLICT (id_ligne)
+                    DO UPDATE SET quantite = EXCLUDED.quantite
+                    '
+                );
+
+                foreach ($sdcs as $sdc) {
+                    $stmt->execute([
+                        'id_ligne' => $sdc->getIdLigne(),
+                        'id_commande' => $commande->getId(),
+                        'id_soiree' => $sdc->getSoiree()->getId(),
+                        'nom_tarif' => $sdc->getTarif()->getNom(),
+                        'quantite' => $sdc->getQuantite()
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        $this->pdo->commit();
     }
 }
