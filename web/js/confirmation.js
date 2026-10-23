@@ -10,4 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
         numCommandeElement.textContent = "ID non Disponible";
         numCommandeElement.style.color = "#ff4757"
     }
-})
+
+    const btnImprimer = document.addEventListener('btn-imprimer');
+    if (btnImprimer) {
+        btnImprimer.addEventListener('click', () => {
+            if (idCommande) {
+                window.open(`billet.html?id=${idCommande}`, '_blank')
+            }
+        })
+    }
+});
