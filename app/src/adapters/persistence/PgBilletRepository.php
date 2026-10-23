@@ -9,7 +9,7 @@ use nrv\domain\entities\Billet;
 use nrv\domain\entities\Soiree;
 use nrv\domain\entities\Tarif;
 use nrv\domain\entities\Utilisateur;
-use nrv\domain\exceptions\BilletNotFound;
+use nrv\domain\exceptions\BilletNotFoundException;
 use PDO;
 
 class PgBilletRepository implements BilletRepository
@@ -25,7 +25,7 @@ class PgBilletRepository implements BilletRepository
                     u.id_utilisateur, u.nom AS user_nom, u.prenom AS user_prenom,
                     s.id_soiree, s.nom AS soiree_nom, s.date AS soiree_date,
                     s.horaire AS soiree_horaire, s.lieu AS soiree_lieu,
-                    s.thematique AS soiree_thematique, nb_places AS soiree_nb
+                    s.thematique AS soiree_thematique, nb_place AS soiree_nb,
                     t.nom AS tarif_nom, t.prix AS tarif_prix
              FROM billet b
              JOIN commande c ON c.id_commande = b.id_commande
@@ -38,7 +38,7 @@ class PgBilletRepository implements BilletRepository
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row === false) {
-            throw new BilletNotFound($token);
+            throw new BilletNotFoundException($token);
         }
 
         $soiree = new Soiree(

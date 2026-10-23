@@ -29,6 +29,10 @@ use nrv\application\ports\api\CommandeServiceInterface;
 use nrv\application\ports\spi\CommandeRepository;
 use nrv\application\usecases\CommandeService;
 use nrv\adapters\persistence\PgCommandeRepository;
+use nrv\application\ports\api\BilletServiceInterface;
+use nrv\application\ports\spi\BilletRepository;
+use nrv\application\usecases\BilletService;
+use nrv\adapters\persistence\PgBilletRepository;
 /**
  * Configuration du conteneur PHP-DI : seul endroit du code qui associe chaque port
  * (interface) à son implémentation. Les actions et les services ne reçoivent que des interfaces.
@@ -68,6 +72,8 @@ final class ContainerConfig
             TokenProvider::class => function () {
                 return new JwtTokenProvider($_ENV['JWT_SECRET']);
             },
+            BilletServiceInterface::class => \DI\create(BilletService::class)
+                ->constructor(\DI\get(BilletRepository::class)),
             // ── adapters ─
             // connexion PDO unique, partagée par tous les repositories ; paramètres lus dans config/.env
             // ERRMODE_EXCEPTION : une erreur SQL lève une exception au lieu de renvoyer false
@@ -89,6 +95,8 @@ final class ContainerConfig
             UtilisateurRepository::class => \DI\create(PgUtilisateurRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
             CommandeRepository::class => \DI\create(PgCommandeRepository::class)
+                ->constructor(\DI\get('nrv.pdo')),
+            BilletRepository::class => \DI\create(PgBilletRepository::class)
                 ->constructor(\DI\get('nrv.pdo')),
         ]);
         return $builder->build();

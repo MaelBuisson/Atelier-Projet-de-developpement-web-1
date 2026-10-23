@@ -9,7 +9,7 @@ use Throwable;
  * Levée lorsqu'aucun billet ne correspond au token demandé.
  * L'action Slim la traduit en réponse HTTP 404.
  */
-class BilletNotFound extends Exception
+class BilletNotFoundException extends Exception
 {
     public function __construct(string $id = '', ?Throwable $previous = null)
     {

@@ -21,6 +21,7 @@ use nrv\adapters\controllers\actions\ValiderPanierAction;
 use nrv\adapters\controllers\actions\GetCommandeAction;
 use nrv\adapters\controllers\actions\PayerCommandeAction;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
+use nrv\adapters\controllers\actions\GetBilletAction;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -92,6 +93,8 @@ $app->group('/commandes', function (RouteCollectorProxy $group) {
     $group->post('/{id}/paiement', PayerCommandeAction::class)
         ->setName('commande-paiement');
 })->add(AuthMiddleware::class);
+
+$app->get('/billets/{token}', GetBilletAction::class)->setName('get_billet')->add(AuthMiddleware::class);
 
 // CORS : options pour les requêtes preflight
 $app->options('/{routes:.+}', function (Request $request, Response $response): Response {
