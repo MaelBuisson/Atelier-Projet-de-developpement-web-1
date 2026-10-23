@@ -15,6 +15,8 @@ use nrv\adapters\controllers\actions\ConnexionAction;
 use nrv\adapters\controllers\actions\GetUtilisateurAction;
 use nrv\adapters\controllers\actions\ListerSoireesAction;
 use nrv\adapters\controllers\actions\GetPanierAction;
+use nrv\adapters\controllers\actions\AjouterAuPanierAction;
+use nrv\adapters\controllers\actions\SupprimerDuPanierAction;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
@@ -72,6 +74,10 @@ $app->group('/auth', function (RouteCollectorProxy $group) {
 $app->group('/panier', function (RouteCollectorProxy $group) {
     $group->get('', GetPanierAction::class)
         ->setName('panier-get');
+    $group->post('/lignes', AjouterAuPanierAction::class)
+        ->setName('panier-ajouter');
+    $group->delete('/lignes/{idLigne}', SupprimerDuPanierAction::class)
+        ->setName('panier-supprimer');
 })->add(AuthMiddleware::class);
 
 // CORS : options pour les requêtes preflight
