@@ -2,7 +2,7 @@
 
 /*
  * Tests des use cases du panier et des commandes (CommandeService) : voir son panier,
- * ajouter et retirer des billets, valider le panier et consulter une commande.
+ * ajouter et retirer des billets, valider le panier, consulter et payer une commande.
  * Les repositories sont remplacés par des fakes : le service ne dépend que des ports SPI.
  */
 
@@ -14,7 +14,9 @@ use nrv\domain\entities\CommandeStatus;
 use nrv\domain\entities\SoireeDansCommande;
 use nrv\domain\entities\Tarif;
 use nrv\domain\entities\Utilisateur;
+use nrv\domain\exceptions\CommandeNonPayable;
 use nrv\domain\exceptions\CommandeNotFound;
+use nrv\domain\exceptions\PlacesInsuffisantes;
 use nrv\domain\exceptions\PanierVide;
 use nrv\domain\exceptions\QuantiteInvalide;
 use nrv\domain\exceptions\SoireeDansCommandeNotFound;
@@ -267,3 +269,64 @@ it("lève CommandeNotFound pour la commande d'un autre utilisateur", function ()
     // Marie connaît l'identifiant de la commande de Jean : même réponse que si elle n'existait pas
     $this->service->getCommande('utilisateur-marie', 'commande-jean');
 })->throws(CommandeNotFound::class);
+
+// ── payer ─
+
+it('paie une commande validée : statut PAYEE et un billet par place', function () {
+    $this->service->valider('utilisateur-jean');
+
+    $commande = $this->service->payer('utilisateur-jean', 'commande-jean');
+
+    expect($commande->statut)->toBe('PAYEE')
+        ->and($this->commandes->billets)->toHaveCount(3)
+        ->and($this->commandes->findById('commande-jean')->getStatus())->toBe(CommandeStatus::PAYEE);
+});
+
+it("lève CommandeNonPayable pour une commande qui n'est pas validée", function () {
+    // la commande de Jean est encore un panier
+    expect(fn () => $this->service->payer('utilisateur-jean', 'commande-jean'))
+        ->toThrow(CommandeNonPayable::class);
+
+    expect($this->commandes->billets)->toBe([]);
+});
+
+it('lève CommandeNonPayable pour une commande déjà payée, sans créer de nouveaux billets', function () {
+    $this->service->valider('utilisateur-jean');
+    $this->service->payer('utilisateur-jean', 'commande-jean');
+
+    expect(fn () => $this->service->payer('utilisateur-jean', 'commande-jean'))
+        ->toThrow(CommandeNonPayable::class);
+
+    expect($this->commandes->billets)->toHaveCount(3);
+});
+
+it("lève CommandeNotFound pour payer la commande d'un autre utilisateur", function () {
+    $this->service->valider('utilisateur-jean');
+
+    expect(fn () => $this->service->payer('utilisateur-marie', 'commande-jean'))
+        ->toThrow(CommandeNotFound::class);
+
+    expect($this->commandes->billets)->toBe([]);
+});
+
+it("lève PlacesInsuffisantes s'il ne reste pas assez de places, sans enregistrer de billet", function () {
+    // Jean demande 3 places pour la soirée rock (2 normal + 1 réduit) : il n'en reste que 2
+    $this->service->valider('utilisateur-jean');
+    $this->commandes->placesRestantes = ['soiree-rock' => 2];
+
+    expect(fn () => $this->service->payer('utilisateur-jean', 'commande-jean'))
+        ->toThrow(PlacesInsuffisantes::class);
+
+    expect($this->commandes->billets)->toBe([])
+        ->and($this->commandes->placesRestantes)->toBe(['soiree-rock' => 2]);
+});
+
+it('accepte un paiement qui prend exactement les dernières places', function () {
+    $this->service->valider('utilisateur-jean');
+    $this->commandes->placesRestantes = ['soiree-rock' => 3];
+
+    $this->service->payer('utilisateur-jean', 'commande-jean');
+
+    expect($this->commandes->billets)->toHaveCount(3)
+        ->and($this->commandes->placesRestantes)->toBe(['soiree-rock' => 0]);
+});

@@ -258,3 +258,31 @@ it('garde une commande reconstruite non modifiable', function () {
 
     $commande->supprimerSoiree('L1');
 })->throws(CommandeNonModifiable::class);
+
+// ── paiement : création des billets ─
+
+it('crée un billet par place au paiement, avec des tokens uniques de 64 caractères hexadécimaux', function () {
+    $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 2));
+    $this->commande->ajouterSoiree(lignePanier('L2', $this->jazz, $this->reduit, 1));
+    $this->commande->valider();
+
+    $billets = $this->commande->payer();
+    $tokens = array_map(fn ($b) => $b->getToken(), $billets);
+
+    expect($this->commande->getStatus())->toBe(CommandeStatus::PAYEE)
+        ->and($billets)->toHaveCount(3)
+        ->and(array_unique($tokens))->toHaveCount(3)
+        ->and($tokens)->each->toMatch('/^[0-9a-f]{64}$/')
+        ->and(array_map(fn ($b) => $b->getSoiree()->getId() . '/' . $b->getTarif()->getNom(), $billets))
+            ->toBe(['soiree-rock/normal', 'soiree-rock/normal', 'soiree-jazz/reduit'])
+        ->and($billets[0]->getIdCommande())->toBe('commande-1')
+        ->and($billets[0]->getTitulaire()->getId())->toBe('utilisateur-1');
+});
+
+it('compte les places demandées par soirée, tous tarifs confondus', function () {
+    $this->commande->ajouterSoiree(lignePanier('L1', $this->rock, $this->normal, 2));
+    $this->commande->ajouterSoiree(lignePanier('L2', $this->rock, $this->reduit, 3));
+    $this->commande->ajouterSoiree(lignePanier('L3', $this->jazz, $this->normal, 1));
+
+    expect($this->commande->getPlacesParSoiree())->toBe(['soiree-rock' => 5, 'soiree-jazz' => 1]);
+});
