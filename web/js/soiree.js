@@ -69,6 +69,7 @@ async function chargerSoiree() {
         const data = await response.json();
         document.title = `${data.soiree.nom} - NRV`;
         container.innerHTML = template(data.soiree);
+        brancherAjoutPanier(id);
     }
     catch (e) {
         // API arrêtée, réseau coupé ou erreur 500
@@ -93,3 +94,91 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+function brancherAjoutPanier(idSoiree) {
+    const form = document.getElementById('form-ajout');
+    if (!form) return; // soirée sans tarif
+
+    const messageAjout = document.getElementById('ajout-message');
+    const valeur = document.getElementById('qte-valeur');
+    const moins = document.getElementById('qte-moins');
+    const plus = document.getElementById('qte-plus');
+    const bouton = document.getElementById('btn-ajout');
+    let quantite = 1;
+
+    const tarifChoisi = () => form.querySelector('input[name="ajout-tarif"]:checked');
+
+    // Fonction pour mettre à jour l'affichage de la quantité
+    function majAffichage() {
+        valeur.textContent = quantite;
+        moins.disabled = quantite <= 1;
+        bouton.textContent = `🛒 Ajouter ${quantite} billet${quantite > 1 ? 's' : ''}`;
+    }
+
+    function afficherAjout(texte, erreur) {
+        messageAjout.textContent = texte; 
+        messageAjout.className = erreur ? 'message message-error' : 'message message-success';
+        messageAjout.hidden = false;
+    }
+
+    moins.addEventListener('click', () => {
+        if (quantite > 1) {
+            quantite--;
+            majAffichage();
+        }
+    });
+
+    plus.addEventListener('click', () => {
+        quantite++;
+        majAffichage();
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // il faut être connecté pour ajouter au panier
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (!token) {
+            window.location.href = 'connexion.html';
+            return;
+        }
+
+        messageAjout.hidden = true;
+        bouton.disabled = true; // évite le double clic pendant la requête
+
+        try {
+            const response = await fetch(`${API}/panier/lignes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ idSoiree, tarif: tarifChoisi().value, quantite }),
+            });
+
+            if (response.status === 401) { // token invalide ou expiré
+                localStorage.removeItem(TOKEN_KEY);
+                window.location.href = 'connexion.html';
+                return;
+            }
+
+            let data = {};
+            try { data = await response.json(); } catch {}
+
+            if (response.ok) {
+                const nb = data.panier.nbBillets;
+                afficherAjout(`Ajouté. Votre panier contient ${nb} billet${nb > 1 ? 's' : ''}.`, false);
+                quantite = 1;
+            } else {
+                afficherAjout(data.error || data.message || `Erreur ${response.status}`, true);
+            }
+        } catch (err) {
+            console.error(err);
+            afficherAjout('Impossible de joindre le serveur API.', true);
+        } finally {
+            bouton.disabled = false;
+            majAffichage();
+        }
+    });
+
+    majAffichage();
+}

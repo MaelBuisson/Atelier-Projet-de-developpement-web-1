@@ -48,19 +48,30 @@
 
             <!-- Zone d'action (Call-to-Action) et Tarification -->
             <div class="tarifs-box">
-                <!-- Regroupement des prix sous forme de "badges" visuels -->
-                <div class="tarifs-badges">
-                    {{#each tarifs}}
-                        <span class="tarif-badge">{{nomTarif nom}} : {{prix prix}}</span>
-                    {{else}}
-                        <span class="tarif-badge">Billetterie bientôt ouverte</span>
-                    {{/each}}
-                </div>
+                {{#if tarifs.length}}
+                <form id="form-ajout" class="form-ajout">
+                    <div class="tarifs-choix" role="radiogroup" aria-label="Choisir un tarif">
+                        {{#each tarifs}}
+                        <label class="tarif-choix">
+                            <input type="radio" name="ajout-tarif" value="{{nom}}" data-prix="{{this.prix}}" {{#if @first}}checked{{/if}}>
+                            <span class="tarif-badge">{{nomTarif nom}} : {{prix prix}}</span>
+                        </label>
+                        {{/each}}
+                    </div>
 
-                <!-- Bouton d'ajout au panier aligné dynamiquement -->
-                <button class="btn-ajouter-panier">
-                    🛒 Ajouter au panier
-                </button>
+                    <div class="ajout-actions">
+                        <div class="quantite-stepper">
+                            <button type="button" id="qte-moins" aria-label="Retirer un billet">−</button>
+                            <output id="qte-valeur">1</output>
+                            <button type="button" id="qte-plus" aria-label="Ajouter un billet">+</button>
+                        </div>
+                        <button type="submit" id="btn-ajout" class="btn-ajouter-panier">🛒 Ajouter au panier</button>
+                    </div>
+                </form>
+                <p id="ajout-message" hidden></p>
+                {{else}}
+                <span class="tarif-badge">Billetterie bientôt ouverte</span>
+                {{/if}}
             </div>
         </section>
 
