@@ -7,26 +7,31 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Conteneur principal de la page d'authentification -->
     <section class="auth-section">
-    <h2>Connexion</h2>
-    
-    <div id="login-error" class="message message-error" hidden></div>
+        <h2>Connexion</h2>
+        
+        <!-- Zone d'affichage des erreurs (ex: mauvais mot de passe), masquée par défaut via l'attribut 'hidden' -->
+        <div id="login-error" class="message message-error" hidden></div>
 
-    <form id="login-form" class="nrv-form">
-        <div class="form-group">
-            <label for="login-email">Email :</label>
-            <input type="email" id="login-email" required>
-        </div>
+        <!-- Formulaire dont la soumission est interceptée et gérée par JavaScript -->
+        <form id="login-form" class="nrv-form">
+            <div class="form-group">
+                <label for="login-email">Email :</label>
+                <input type="email" id="login-email" required>
+            </div>
 
-        <div class="form-group">
-            <label for="login-password">Mot de passe :</label>
-            <input type="password" id="login-password" required>
-        </div>
+            <div class="form-group">
+                <label for="login-password">Mot de passe :</label>
+                <input type="password" id="login-password" required>
+            </div>
 
-        <button type="submit" class="btn-primary">Se connecter</button>
-    </form>
-</section>
-<script src="js/config.js"></script>
-<script src="js/connexion.js"></script>
+            <button type="submit" class="btn-primary">Se connecter</button>
+        </form>
+    </section>
+
+    <!-- Fichiers requis : configuration globale (URL API) et logique spécifique à la connexion -->
+    <script src="js/config.js"></script>
+    <script src="js/connexion.js"></script>
 </body>
 </html>

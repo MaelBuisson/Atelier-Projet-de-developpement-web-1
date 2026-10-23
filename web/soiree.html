@@ -1,43 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détail de la soirée</title>
-    <!-- Même fichier CSS global compilé via nos modules SASS -->
+    <!-- Fichier CSS unique de l'application -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-    <!-- En-tête global réutilisé pour la cohérence de navigation -->
+    <!-- En-tête principal : Logo et navigation -->
     <header class="main-header">
         <div class="logo">NRV</div>
 
+        <!-- Bouton menu burger pour l'affichage sur mobile -->
         <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
             <span class="burger-line"></span>
             <span class="burger-line"></span>
             <span class="burger-line"></span>
         </button>
 
+        <!-- Liens de navigation (dynamisés par JS selon l'état de connexion) -->
         <nav id="main-nav">
             <a href="index.html">Programme</a>
             <a href="panier.html">Panier (0)</a>
-
             <a href="inscription.html" class="btn-primary">S'inscrire</a>
             <a href="connexion.html" class="btn-primary">Se connecter</a>
         </nav>
     </header>
 
-    <!-- Conteneur principal : Gère la mise en page en 2 colonnes sur ordinateur (via Flexbox) et empilée sur mobile -->
+    <!-- Conteneur cible où soiree.js va injecter le code HTML généré par le template Handlebars -->
     <main class="soiree-container">
-        <!-- remplacé par le template ci-dessous une fois la soirée chargée (js/soiree.js) -->
         <p class="chargement">Chargement de la soirée…</p>
     </main>
 
-    <!-- Template Handlebars du détail : {{champ}} est remplacé par la donnée de l'API (texte échappé),
-         {{#each}} répète un bloc pour chaque élément, {{else}} s'affiche si la liste est vide -->
+    <!-- Template Handlebars : Définit la structure d'affichage des données de l'API pour une soirée -->
     <script id="tpl-soiree" type="text/x-handlebars-template">
+        
+        <!-- Informations générales de la soirée -->
         <section class="soiree-info">
             <h1>{{nom}}</h1>
             <ul class="info-list">
@@ -46,47 +45,49 @@
                 <li><strong>Lieu :</strong> {{lieu}}</li>
             </ul>
 
-            <!-- Zone d'action (Call-to-Action) et Tarification -->
+            <!-- Formulaire de billetterie (affiché uniquement si l'API renvoie des tarifs) -->
             <div class="tarifs-box">
                 {{#if tarifs.length}}
                 <form id="form-ajout" class="form-billetterie">
-    <div id="ajout-message" class="message" hidden></div>
-    
-    <div class="tarifs-options">
-        {{#each tarifs}}
-        <label class="tarif-radio">
-            <!-- @first permet de cocher automatiquement le premier tarif de la liste -->
-            <input type="radio" name="ajout-tarif" value="{{this.nom}}" {{#if @first}}checked{{/if}}>
-            <span>{{nomTarif this.nom}} : <strong>{{prix this.prix}}</strong></span>
-        </label>
-        {{/each}}
-    </div>
+                    <div id="ajout-message" class="message" hidden></div>
+                    
+                    <!-- Boucle générant un bouton radio pour chaque tarif existant -->
+                    <div class="tarifs-options">
+                        {{#each tarifs}}
+                        <label class="tarif-radio">
+                            <!-- @first permet de pré-cocher automatiquement le premier tarif de la liste -->
+                            <input type="radio" name="ajout-tarif" value="{{this.nom}}" {{#if @first}}checked{{/if}}>
+                            <span>{{nomTarif this.nom}} : <strong>{{prix this.prix}}</strong></span>
+                        </label>
+                        {{/each}}
+                    </div>
 
-    <div class="quantite-container">
-        <!-- Les IDs correspondent exactement à ton const moins, const plus, const valeur -->
-        <button type="button" class="btn-qty" id="qte-moins" disabled>-</button>
-        <span id="qte-valeur" class="qty-display">1</span>
-        <button type="button" class="btn-qty" id="qte-plus">+</button>
-    </div>
+                    <!-- Sélecteur de quantité géré par le JavaScript -->
+                    <div class="quantite-container">
+                        <button type="button" class="btn-qty" id="qte-moins" disabled>-</button>
+                        <span id="qte-valeur" class="qty-display">1</span>
+                        <button type="button" class="btn-qty" id="qte-plus">+</button>
+                    </div>
 
-    <button type="submit" id="btn-ajout" class="btn-action">
-        🛒 Ajouter 1 billet
-    </button>
-</form>
-                <p id="ajout-message" hidden></p>
+                    <button type="submit" id="btn-ajout" class="btn-action">
+                        🛒 Ajouter 1 billet
+                    </button>
+                </form>
                 {{else}}
                 <span class="tarif-badge">Billetterie bientôt ouverte</span>
                 {{/if}}
             </div>
         </section>
 
+        <!-- Liste des spectacles rattachés à cette soirée -->
         <section class="spectacles-list">
             <h2>Spectacles de la soirée</h2>
 
+            <!-- Boucle générant une carte pour chaque spectacle -->
             {{#each spectacles}}
-            <!-- Composant "Détail du spectacle" : réutilisable pour l'injection dynamique de données -->
             <article class="spectacle-detail-card">
-                <!-- Faux lecteur vidéo (passe de haut en bas sur mobile, à gauche sur PC) -->
+                
+                <!-- Zone vidéo (s'adapte automatiquement si l'URL de la vidéo est fournie ou non) -->
                 <div class="video-placeholder">
                     {{#if video}}
                         <video class="video" src="{{video}}" controls preload="none"></video>
@@ -94,6 +95,7 @@
                         <div class="video-placeholder">Vidéo bientôt disponible</div>
                     {{/if}}
                 </div>
+                
                 <!-- Informations spécifiques au spectacle -->
                 <div class="spectacle-info">
                     <h3>{{titre}}</h3>
@@ -105,17 +107,19 @@
                 </div>
             </article>
             {{else}}
+                <!-- Message de repli si le tableau de spectacles est vide -->
                 <p>La programmation de cette soirée sera bientôt annoncée.</p>
             {{/each}}
             
         </section>
     </script>
 
-    <!-- Handlebars doit être chargé avant le script de la page qui l'utilise -->
+    <!-- La librairie Handlebars doit obligatoirement être chargée AVANT soiree.js -->
     <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+    
+    <!-- Fichiers requis : configuration globale, logique du menu (script.js) et logique de la soirée -->
     <script src="js/config.js"></script>
-    <script src="js/soiree.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/soiree.js"></script>
 </body>
-
 </html>

@@ -1,62 +1,60 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Fichier CSS unique, généré par la compilation de nos modules SCSS -->
+    <!-- Fichier CSS unique compilé depuis SCSS -->
     <link rel="stylesheet" href="css/style.css">
     <title>Nancy Rock Vibration</title>
 </head>
-
 <body>
-    <!-- En-tête global : utilise Flexbox pour espacer le logo et la navigation -->
+    <!-- En-tête global avec Flexbox pour espacer le logo et la navigation -->
     <header class="main-header">
         <div class="logo">NRV</div>
 
+        <!-- Bouton menu burger pour la version mobile (géré en JS) -->
         <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
         </button>
 
+        <!-- Liens de navigation (dynamisés par JS selon l'état de connexion) -->
         <nav id="main-nav">
             <a href="index.html">Programme</a>
             <a href="panier.html">Panier (0)</a>
-
             <a href="inscription.html" class="btn-primary">S'inscrire</a>
             <a href="connexion.html" class="btn-primary">Se connecter</a>
         </nav>
     </header>
 
-    <!-- Conteneur principal : gère le passage d'une colonne (mobile) à deux colonnes (PC) -->
+    <!-- Conteneur principal : passage d'une colonne (mobile) à deux colonnes (PC) -->
     <main>
-        <!-- Colonne de gauche : Panneau latéral des filtres -->
+        <!-- Colonne de gauche : Le JS écoute les changements sur ces <select> pour requêter l'API -->
         <section id="filtres" class="filters-section">
-    <select id="filter-style" class="filter-select">
-        <option value="">Tous les styles</option>
-        <option value="Rock">Rock</option>
-        <option value="Metal">Métal</option>
-        <option value="Punk">Punk</option>
-    </select>
+            <select id="filter-style" class="filter-select">
+                <option value="">Tous les styles</option>
+                <option value="Rock">Rock</option>
+                <option value="Metal">Métal</option>
+                <option value="Punk">Punk</option>
+            </select>
 
-    <select id="filter-date" class="filter-select">
-        <option value="">Toutes les dates</option>
-        <option value="2027-07-08">8 Juillet 2027</option>
-        <option value="2027-07-09">9 Juillet 2027</option>
-        <option value="2027-07-10">10 Juillet 2027</option>
-    </select>
-</section>
+            <select id="filter-date" class="filter-select">
+                <option value="">Toutes les dates</option>
+                <option value="2027-07-08">8 Juillet 2027</option>
+                <option value="2027-07-09">9 Juillet 2027</option>
+                <option value="2027-07-10">10 Juillet 2027</option>
+            </select>
+        </section>
 
-        <!-- Colonne de droite : Conteneur utilisant CSS Grid pour l'affichage responsive -->
+        <!-- Colonne de droite : Les cartes des spectacles seront injectées ici par script.js -->
         <section id="spectacles" class="spectacles-grid">
-
-          
-
+            
         </section>
     </main>
+
+    <!-- Chargement des scripts : configuration API et logique d'affichage des spectacles/filtres -->
     <script src="js/config.js"></script>
     <script src="js/script.js"></script>
 </body>
-
 </html>

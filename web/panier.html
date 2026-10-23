@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Votre Panier - NRV</title>
+    <!-- Fichier CSS unique de l'application -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- En-tête principal : Logo et menu de navigation -->
     <header class="main-header">
         <div class="logo">NRV</div>
+        
+        <!-- Bouton menu burger pour l'affichage sur mobile -->
         <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
             <span class="burger-line"></span>
             <span class="burger-line"></span>
             <span class="burger-line"></span>
         </button>
+        
+        <!-- Liens de navigation (dynamisés par JS selon l'état de connexion) -->
         <nav id="main-nav">
             <a href="index.html">Programme</a>
             <a href="panier.html">Panier (0)</a>
@@ -23,26 +29,31 @@
     </header>
 
     <main>
+        <!-- Section centrale dédiée à la gestion du panier de l'utilisateur -->
         <section class="panier-section">
             <h2>Votre panier</h2>
+            
+            <!-- Zone d'affichage des messages d'erreur (ex: panier vide, erreur serveur), masquée par défaut -->
             <div id="message-panier" class="message message-error" hidden></div>
 
             <div class="panier-card">
                 <h3>Vos billets</h3>
+                
+                <!-- Conteneur cible où panier.js va injecter dynamiquement les billets ajoutés par l'utilisateur -->
                 <div id="liste-billets" class="liste-billets">
-                    <!-- Injection JS -->
+                    <!-- Injection JS des lignes du panier -->
                 </div>
                 
+                <!-- Zone d'affichage dynamique du montant total du panier -->
                 <div class="resume-total">
                     <span class="total-label">Total</span>
                     <span class="total-montant" id="total-prix">0,00 €</span>
                 </div>
 
-                
-
-                <!-- Le bouton qui redirigera vers paiement.html via JS -->
+                <!-- Boutons d'action : Vider le panier ou passer à la commande (activés/désactivés par JS selon le contenu) -->
                  <div class="actions-panier">
                     <button type="button" id="btn-vider" class="btn-vider" disabled>Vider le panier</button>
+                    <!-- Ce bouton déclenchera la validation de la commande et la redirection vers paiement.html via panier.js -->
                     <button type="button" id="btn-valider" class="btn-action" disabled>Valider mon panier</button>
                 </div>
                 
@@ -50,6 +61,7 @@
         </section>
     </main>
 
+    <!-- Fichiers requis : configuration globale, menu/authentification (script.js), et logique spécifique au panier -->
     <script src="js/config.js"></script>
     <script src="js/script.js"></script>
     <script src="js/panier.js"></script>

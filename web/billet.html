@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <title>Impression de vos billets - NRV</title>
     <style>
+        /* Styles de base de la page */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background: #eeeeee; 
             padding: 2rem; 
             color: #000; 
         }
+        
+        /* Zone du bouton d'impression (sera masquée à l'impression) */
         .no-print { 
             text-align: center; 
             margin-bottom: 2rem; 
@@ -25,6 +28,7 @@
             border-radius: 6px; 
         }
         
+        /* Disposition en colonne des billets générés */
         #billets-container {
             display: flex;
             flex-direction: column;
@@ -32,6 +36,7 @@
             gap: 2rem;
         }
 
+        /* Style de la carte d'un billet individuel */
         .billet {
             background: #ffffff;
             border: 2px dashed #333;
@@ -43,10 +48,12 @@
             justify-content: space-between;
             align-items: center;
             gap: 2rem; 
+            /* Empêche le navigateur de couper un billet en deux lors d'un saut de page */
             page-break-inside: avoid;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
+        /* Section gauche du billet : Informations texte */
         .billet-info {
             flex: 1; 
             min-width: 250px;
@@ -67,6 +74,7 @@
             font-size: 1rem;
         }
         
+        /* Section droite du billet : QR Code */
         .billet-code {
             flex: 1;
             display: flex;
@@ -74,7 +82,6 @@
             align-items: center;
             overflow: hidden; 
         }
-
         .billet-code img {
             max-width: 100%; 
             height: auto;
@@ -82,11 +89,14 @@
             object-fit: contain;
         }
         
-        
+        /* Styles appliqués UNIQUEMENT lors de l'impression physique (Ctrl+P) */
         @media print {
+            /* Suppression du fond gris pour économiser l'encre */
             body { background: #ffffff; padding: 0; }
+            /* Masquage du bouton web */
             .no-print { display: none; }
             #billets-container { gap: 1rem; }
+            /* Remplacement des pointillés par une bordure pleine noire */
             .billet { 
                 border: 2px solid #000; 
                 box-shadow: none; 
@@ -97,14 +107,17 @@
 </head>
 <body>
 
+    <!-- Bouton déclenchant l'impression du navigateur -->
     <div class="no-print">
         <button class="btn-print" onclick="window.print()">🖨️ Lancer l'impression</button>
     </div>
 
+    <!-- Conteneur cible où le JavaScript (billet.js) va injecter les billets générés -->
     <div id="billets-container">
         <p style="text-align: center;">Génération de vos billets en cours...</p>
     </div>
 
+    <!-- Chargement de l'URL de l'API puis du script de génération logicielle -->
     <script src="js/config.js"></script>
     <script src="js/billet.js"></script>
 </body>

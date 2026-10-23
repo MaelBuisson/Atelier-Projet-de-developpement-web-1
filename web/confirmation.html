@@ -7,13 +7,18 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- En-tête principal : Logo et menu de navigation -->
     <header class="main-header">
         <div class="logo">NRV</div>
+        
+        <!-- Bouton menu burger pour la version mobile -->
         <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
             <span class="burger-line"></span>
             <span class="burger-line"></span>
             <span class="burger-line"></span>
         </button>
+        
+        <!-- Liens de navigation (dynamisés par JS selon l'état de connexion) -->
         <nav id="main-nav">
             <a href="index.html">Programme</a>
             <a href="panier.html">Panier (0)</a>
@@ -23,17 +28,20 @@
     </header>
 
     <main>
+        <!-- Section centrale : Message de succès après le paiement -->
         <section class="confirmation-section">
             <div class="confirmation-card">
                 <div class="icon-success">✅</div>
                 <h2>Paiement réussi !</h2>
                 <p>Merci pour votre commande. Vos billets sont réservés et vous recevrez un email de confirmation sous peu.</p>
                 
+                <!-- Zone d'affichage dynamique du numéro de commande récupéré via l'API -->
                 <div class="commande-details">
                     <span>Numéro de commande :</span>
                     <strong id="num-commande">Chargement...</strong>
                 </div>
 
+                <!-- Bouton relié à confirmation.js pour ouvrir billet.html avec l'ID de la commande -->
                 <button id="btn-imprimer" class="btn-action">🎫 Imprimer mes billets</button>
 
                 <a href="index.html" class="btn-action">Retour au programme</a>
@@ -41,6 +49,7 @@
         </section>
     </main>
 
+    <!-- Chargement des scripts : configuration API, gestion du menu/navbar, et logique de la page de confirmation -->
     <script src="js/config.js"></script>
     <script src="js/script.js"></script>
     <script src="js/confirmation.js"></script>

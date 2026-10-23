@@ -7,38 +7,43 @@
     <title>Inscription</title>
 </head>
 <body>
+    <!-- Conteneur principal de la page d'inscription -->
     <section class="auth-section">
-    <h2>Créer un compte</h2>
+        <h2>Créer un compte</h2>
+        
+        <!-- Zones d'affichage des messages (erreur ou succès), masquées par défaut (attribut 'hidden') -->
+        <div id="register-error" class="message message-error" hidden></div>
+        <div id="register-success" class="message message-success" hidden>Inscription réussie !</div>
+
+        <!-- Formulaire dont la soumission est interceptée par inscription.js -->
+        <form id="register-form" class="nrv-form">
+            <!-- Champs du formulaire avec validation HTML5 intégrée (required, type="email", minlength="8") -->
+            <div class="form-group">
+                <label for="nom">Nom :</label>
+                <input type="text" id="nom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prenom">Prénom :</label>
+                <input type="text" id="prenom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email :</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe :</label>
+                <input type="password" id="password" minlength="8" required>
+            </div>
+
+            <button type="submit" class="btn-primary">S'inscrire</button>
+        </form>
+    </section>
     
-    <div id="register-error" class="message message-error" hidden></div>
-    <div id="register-success" class="message message-success" hidden>Inscription réussie !</div>
-
-    <form id="register-form" class="nrv-form">
-        <div class="form-group">
-            <label for="nom">Nom :</label>
-            <input type="text" id="nom" required>
-        </div>
-
-        <div class="form-group">
-            <label for="prenom">Prénom :</label>
-            <input type="text" id="prenom" required>
-        </div>
-
-        <div class="form-group">
-            <label for="email">Email :</label>
-            <input type="email" id="email" required>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Mot de passe :</label>
-            <input type="password" id="password" minlength="8" required>
-        </div>
-
-        <button type="submit" class="btn-primary">S'inscrire</button>
-    </form>
-</section>
-</section>
-<script src="js/config.js"></script>
-<script src="js/inscription.js"></script>
+    <!-- Fichiers requis : configuration globale (URL API) et logique spécifique à l'inscription -->
+    <script src="js/config.js"></script>
+    <script src="js/inscription.js"></script>
 </body>
 </html>

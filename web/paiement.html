@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paiement - NRV</title>
+    <!-- Fichier CSS unique de l'application -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- En-tête principal : Logo et menu de navigation -->
     <header class="main-header">
         <div class="logo">NRV</div>
+        
+        <!-- Bouton menu burger pour l'affichage sur mobile -->
         <button id="burger-btn" class="burger-menu" aria-label="Ouvrir le menu">
             <span class="burger-line"></span>
             <span class="burger-line"></span>
             <span class="burger-line"></span>
         </button>
+        
+        <!-- Liens de navigation (dynamisés par JS selon si l'utilisateur est connecté ou non) -->
         <nav id="main-nav">
             <a href="index.html">Programme</a>
             <a href="panier.html">Panier (0)</a>
@@ -23,26 +29,33 @@
     </header>
 
     <main>
+        <!-- Section centrale dédiée au processus de paiement -->
         <section class="panier-section">
             <h2>Paiement</h2>
+            
+            <!-- Zone d'affichage des erreurs de paiement (ex: carte refusée), masquée par défaut -->
             <div id="message-paiement" class="message message-error" hidden></div>
 
             <div class="panier-card">
                 <h3>Récapitulatif de votre commande</h3>
                 
+                <!-- Conteneur cible où paiement.js va injecter les détails de la commande récupérés via l'API -->
                 <div id="liste-billets" class="liste-billets">
-
+                    <!-- Les lignes de la commande s'afficheront ici -->
                 </div>
                 
+                <!-- Zone d'affichage dynamique du montant total de la commande -->
                 <div class="resume-total">
                     <span class="total-label">Total à payer</span>
                     <span class="total-montant" id="total-prix">0,00 €</span>
                 </div>
 
+                <!-- Séparateur visuel -->
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0;">
 
                 <h3>Paiement Sécurisé</h3>
                 
+                <!-- Formulaire de paiement factice dont la soumission est gérée par paiement.js -->
                 <form id="form-paiement" class="form-paiement">
                     <input type="text" id="cb-numero" placeholder="Numéro de carte..." required>
                     
@@ -51,12 +64,14 @@
                         <input type="text" id="cb-cvc" placeholder="CVC" required>
                     </div>
 
+                    <!-- Bouton de validation (souvent désactivé par défaut le temps que l'API charge la commande) -->
                     <button type="submit" id="btn-payer" class="btn-action btn-bleu" disabled>Payer la commande</button>
                 </form>
             </div>
         </section>
     </main>
 
+    <!-- Fichiers requis : configuration globale, menu/authentification (script.js), et logique de paiement -->
     <script src="js/config.js"></script>
     <script src="js/script.js"></script>
     <script src="js/paiement.js"></script>
