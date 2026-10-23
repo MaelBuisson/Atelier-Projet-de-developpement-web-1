@@ -22,6 +22,7 @@ use nrv\adapters\controllers\actions\GetCommandeAction;
 use nrv\adapters\controllers\actions\PayerCommandeAction;
 use nrv\adapters\controllers\middlewares\AuthMiddleware;
 use nrv\adapters\controllers\actions\GetBilletAction;
+use nrv\adapters\controllers\actions\ListerCommandesAction;
 
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 $dotenv->load();
@@ -88,6 +89,8 @@ $app->group('/panier', function (RouteCollectorProxy $group) {
 
 // commandes de l'utilisateur connecté : tout le groupe est protégé par le token
 $app->group('/commandes', function (RouteCollectorProxy $group) {
+    $group->get('', ListerCommandesAction::class)
+        ->setName('commandes-list');
     $group->get('/{id}', GetCommandeAction::class)
         ->setName('commande-detail');
     $group->post('/{id}/paiement', PayerCommandeAction::class)
