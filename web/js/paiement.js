@@ -124,8 +124,7 @@ form.addEventListener('submit', async (e) => {
             return;
         }
 
-        form.reset();
-        afficherMessage('Paiement accepté, merci !', false);
+        window.location.href = `confirmation.html?id=${encodeURIComponent(idCommande)}`;
     } catch (err) {
         console.error(err);
         afficherMessage('Impossible de joindre le serveur API.');
