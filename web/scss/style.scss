@@ -75,7 +75,7 @@ body {
             padding: 0.5rem 1.2rem;
             border-radius: $radius-card; // Ta variable d'arrondi
             color: #ffffff;
-            
+
             &:hover {
                 background-color: darken($color-primary, 10%);
                 color: #ffffff;
@@ -98,7 +98,7 @@ body {
             padding: 2rem;
             gap: 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            
+
             // Masqué par défaut (décalé vers le haut et invisible)
             opacity: 0;
             transform: translateY(-20px);
@@ -120,13 +120,21 @@ body {
         }
 
         .burger-menu.active {
-            .burger-line:nth-child(1) { transform: rotate(45deg); }
-            .burger-line:nth-child(2) { opacity: 0; }
-            .burger-line:nth-child(3) { transform: rotate(-45deg); }
+            .burger-line:nth-child(1) {
+                transform: rotate(45deg);
+            }
+
+            .burger-line:nth-child(2) {
+                opacity: 0;
+            }
+
+            .burger-line:nth-child(3) {
+                transform: rotate(-45deg);
+            }
         }
     }
 }
-    
+
 
 
 // ==========================================
@@ -147,9 +155,9 @@ main {
 
 .filters-section {
     padding: 2rem;
-    background-color: #1a1a1a; 
+    background-color: #1a1a1a;
     border-radius: $radius-card;
-    height: fit-content; 
+    height: fit-content;
 
     .filter-select {
         width: 100%;
@@ -157,18 +165,18 @@ main {
         margin-bottom: 1.5rem;
         background-color: transparent;
         color: #ffffff;
-        border: 1px solid rgba(255, 255, 255, 0.2); 
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 4px;
         cursor: pointer;
         outline: none;
         transition: border-color 0.3s ease;
 
         &:focus {
-            border-color: $color-primary; 
+            border-color: $color-primary;
         }
 
         option {
-            background-color: #1a1a1a; 
+            background-color: #1a1a1a;
             color: #ffffff;
         }
     }
@@ -244,7 +252,7 @@ main {
 
     // Agencement en 2 colonnes sur grand écran
     @include tablet-up {
-        flex-direction: row; 
+        flex-direction: row;
         align-items: flex-start;
     }
 }
@@ -340,7 +348,7 @@ main {
 
 // Composant détaillé d'un spectacle (avec vidéo)
 .spectacle-detail-card {
-    background-color: $bg-card; 
+    background-color: $bg-card;
     border-radius: $radius-card;
     overflow: hidden;
     margin-bottom: 1.5rem;
@@ -350,9 +358,9 @@ main {
     @include tablet-up {
         flex-direction: row; // Vidéo à gauche sur PC
     }
-    
+
     .video-placeholder {
-        background-color: #000; 
+        background-color: #000;
         height: 200px;
         display: flex;
         justify-content: center;
@@ -361,14 +369,14 @@ main {
 
         @include tablet-up {
             width: 350px; // Fige la largeur de la vidéo sur grand écran
-            height: auto; 
+            height: auto;
             flex-shrink: 0; // Empêche l'écrasement de la zone vidéo
         }
     }
 
     .spectacle-info {
         padding: 1.5rem;
-        
+
         h3 {
             margin-bottom: 0.5rem;
         }
@@ -437,7 +445,7 @@ main {
                 color: $text-main;
             }
 
-            input { 
+            input {
                 padding: 0.75rem;
                 border: 1px solid rgba($text-main, 0.2);
                 border-radius: $radius-card;
@@ -484,13 +492,14 @@ main {
 
 .panier-section {
     padding: 2rem;
-    max-width: 1000px; 
+    max-width: 600px;
     margin: 0 auto;
-    
+
     h2 {
         color: #ffffff;
         margin-bottom: 2rem;
         font-size: 1.8rem;
+        text-align: center;
     }
 
     h3 {
@@ -499,104 +508,180 @@ main {
         margin-bottom: 1.5rem;
     }
 
-    
-    .panier-layout {
-        display: grid;
-        grid-template-columns: 1fr; 
-        gap: 3rem;
-        background-color: $bg-card; 
+
+    .panier-card {
+        background-color: $bg-card;
         padding: 2rem;
         border-radius: $radius-card;
+        display: flex;
+        flex-direction: column;
 
-        
-        @include tablet-up { 
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-        }
-    }
-
-    /* --- GAUCHE : BILLETS --- */
-    .panier-gauche {
-        .liste-billets {
+        .actions-panier {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 1.5rem;
-        }
+            margin-top: 1rem;
 
-        .billet-item {
-            display: flex;
-            justify-content: space-between;
-            color: $text-secondary;
-            font-size: 1rem;
-        }
+            @include tablet-up {
+                flex-direction: row;
+                justify-content: space-between;
+            }
 
-        .resume-total {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            
-            .total-label, .total-montant {
-                font-size: 1.25rem;
+            .btn-action {
+                flex: 2;
+            }
+
+            .btn-vider {
+                flex: 1;
+                background-color: transparent;
+                color: #ff4757;
+                border: 1px solid #ff4757;
+                padding: 1rem;
+                border-radius: 8px;
+                font-size: 1rem;
                 font-weight: bold;
-                color: #ffffff;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover:not(:disabled) {
+                    background-color: #ff4757;
+                    color: #ffffff;
+                }
+
+                &:disabled {
+                    opacity: 0.3;
+                    cursor: not-allowed;
+                    border-color: #555;
+                    color: #555;
+                }
             }
         }
     }
 
-    /* --- DROITE : PAIEMENT --- */
-    .panier-droite {
-        .form-paiement {
+    /* --- BILLETS --- */
+    .liste-billets {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 1.5rem;
+    }
+
+    .billet-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        color: $text-secondary;
+        font-size: 1rem;
+
+
+        span:first-child {
+            flex: 1;
+            padding-right: 1rem;
+        }
+
+
+
+        a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+
+            &:hover {
+                color: $color-primary;
+                text-decoration: underline;
+            }
+        }
+
+
+        span:last-child {
+            font-weight: bold;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+    }
+
+    .resume-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+
+        .total-label,
+        .total-montant {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+    }
+
+    /* --- FORMULAIRE PAIEMENT --- */
+    .form-paiement {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background-color: transparent;
+            color: #ffffff;
+            font-size: 1rem;
+
+            &::placeholder {
+                color: rgba(255, 255, 255, 0.4);
+            }
+
+            &:focus {
+                outline: none;
+                border-color: $color-primary;
+            }
+        }
+
+        .form-row {
             display: flex;
-            flex-direction: column;
             gap: 1rem;
 
             input {
-                width: 100%;
-                padding: 1rem;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 8px;
-                background-color: transparent;
-                color: #ffffff;
-                font-size: 1rem;
-
-                &::placeholder {
-                    color: rgba(255, 255, 255, 0.4);
-                }
-
-                &:focus {
-                    outline: none;
-                    border-color: $color-primary;
-                }
+                flex: 1;
             }
+        }
+    }
 
-            .form-row {
-                display: flex;
-                gap: 1rem;
+    /* --- BOUTONS (Valider / Payer  --- */
+    .btn-action {
+        background-color: $color-primary;
+        color: #ffffff;
+        padding: 1rem;
+        font-size: 1.1rem;
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-align: center;
 
-                input {
-                    flex: 1; 
-                }
-            }
+        &:hover {
+            background-color: darken($color-primary, 10%);
+        }
 
-            .btn-payer {
-                background-color: #2b5cff;
-                color: #ffffff;
-                padding: 1rem;
-                font-size: 1.1rem;
-                margin-top: 1rem;
-                width: 100%;
-                border-radius: 8px;
-                border: none;
-                font-weight: bold;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-                
-                &:hover {
-                    background-color: darken(#2b5cff, 10%);
-                }
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        &.btn-bleu {
+            background-color: #2b5cff;
+            margin-top: 1rem;
+
+            &:hover {
+                background-color: darken(#2b5cff, 10%);
             }
         }
     }

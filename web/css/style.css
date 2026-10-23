@@ -410,37 +410,68 @@ main {
 
 .panier-section {
   padding: 2rem;
-  max-width: 1000px;
+  max-width: 600px;
   margin: 0 auto;
 }
 .panier-section h2 {
   color: #ffffff;
   margin-bottom: 2rem;
   font-size: 1.8rem;
+  text-align: center;
 }
 .panier-section h3 {
   color: #ffffff;
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
 }
-.panier-section .panier-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 3rem;
+.panier-section .panier-card {
   background-color: #1E1E1E;
   padding: 2rem;
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.panier-section .panier-card .actions-panier {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 @media (min-width: 768px) {
-  .panier-section .panier-layout {
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+  .panier-section .panier-card .actions-panier {
+    flex-direction: row;
+    justify-content: space-between;
   }
 }
-.panier-section {
-  /* --- GAUCHE : BILLETS --- */
+.panier-section .panier-card .actions-panier .btn-action {
+  flex: 2;
 }
-.panier-section .panier-gauche .liste-billets {
+.panier-section .panier-card .actions-panier .btn-vider {
+  flex: 1;
+  background-color: transparent;
+  color: #ff4757;
+  border: 1px solid #ff4757;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.panier-section .panier-card .actions-panier .btn-vider:hover:not(:disabled) {
+  background-color: #ff4757;
+  color: #ffffff;
+}
+.panier-section .panier-card .actions-panier .btn-vider:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #555;
+  color: #555;
+}
+.panier-section {
+  /* --- BILLETS --- */
+}
+.panier-section .liste-billets {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -448,31 +479,54 @@ main {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 1.5rem;
 }
-.panier-section .panier-gauche .billet-item {
-  display: flex;
-  justify-content: space-between;
-  color: #A3A3A3;
-  font-size: 1rem;
-}
-.panier-section .panier-gauche .resume-total {
+.panier-section .billet-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  color: #A3A3A3;
+  font-size: 1rem;
 }
-.panier-section .panier-gauche .resume-total .total-label, .panier-section .panier-gauche .resume-total .total-montant {
+.panier-section .billet-item span:first-child {
+  flex: 1;
+  padding-right: 1rem;
+}
+.panier-section .billet-item a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+.panier-section .billet-item a:hover {
+  color: #E63946;
+  text-decoration: underline;
+}
+.panier-section .billet-item span:last-child {
+  font-weight: bold;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.panier-section .resume-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.panier-section .resume-total .total-label,
+.panier-section .resume-total .total-montant {
   font-size: 1.25rem;
   font-weight: bold;
   color: #ffffff;
 }
 .panier-section {
-  /* --- DROITE : PAIEMENT --- */
+  /* --- FORMULAIRE PAIEMENT --- */
 }
-.panier-section .panier-droite .form-paiement {
+.panier-section .form-paiement {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
-.panier-section .panier-droite .form-paiement input {
+.panier-section .form-paiement input {
   width: 100%;
   padding: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -481,33 +535,47 @@ main {
   color: #ffffff;
   font-size: 1rem;
 }
-.panier-section .panier-droite .form-paiement input::placeholder {
+.panier-section .form-paiement input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
-.panier-section .panier-droite .form-paiement input:focus {
+.panier-section .form-paiement input:focus {
   outline: none;
   border-color: #E63946;
 }
-.panier-section .panier-droite .form-paiement .form-row {
+.panier-section .form-paiement .form-row {
   display: flex;
   gap: 1rem;
 }
-.panier-section .panier-droite .form-paiement .form-row input {
+.panier-section .form-paiement .form-row input {
   flex: 1;
 }
-.panier-section .panier-droite .form-paiement .btn-payer {
-  background-color: #2b5cff;
+.panier-section {
+  /* --- BOUTONS (Valider / Payer  --- */
+}
+.panier-section .btn-action {
+  background-color: #E63946;
   color: #ffffff;
   padding: 1rem;
   font-size: 1.1rem;
-  margin-top: 1rem;
   width: 100%;
   border-radius: 8px;
   border: none;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  text-align: center;
 }
-.panier-section .panier-droite .form-paiement .btn-payer:hover {
+.panier-section .btn-action:hover {
+  background-color: rgb(209.5426008969, 26.4573991031, 40.2152466368);
+}
+.panier-section .btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.panier-section .btn-action.btn-bleu {
+  background-color: #2b5cff;
+  margin-top: 1rem;
+}
+.panier-section .btn-action.btn-bleu:hover {
   background-color: rgb(0, 57.0896226415, 247);
 }/*# sourceMappingURL=style.css.map */
