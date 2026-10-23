@@ -1,6 +1,6 @@
 <?php
 
-namespace nrv\application\ports\spi;
+namespace nrv\application\ports\api;
 
 use nrv\application\dto\JaugeSoireeDTO;
 
