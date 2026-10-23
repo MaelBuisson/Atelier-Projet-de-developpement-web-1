@@ -25,12 +25,28 @@ class Commande
     /** @var array<string, SoireeDansCommande> lignes du panier, indexées par leur identifiant */
     private array $soireesDansCommande = [];
 
-    public function __construct(string $id, DateTimeImmutable $date, Utilisateur $utilisateur, CommandeStatus $status = CommandeStatus::PANIER)
-    {
+    /**
+     * $soireesDansCommande sert à reconstruire une commande lue en base, quel que soit son statut :
+     * ces lignes ne passent pas par ajouterSoiree(), qui refuse toute modification hors du statut PANIER.
+     *
+     * @param SoireeDansCommande[] $soireesDansCommande
+     */
+    public function __construct(
+        string $id,
+        DateTimeImmutable $date,
+        Utilisateur $utilisateur,
+        CommandeStatus $status = CommandeStatus::PANIER,
+        array $soireesDansCommande = []
+    ) {
         $this->idCommande = $id;
         $this->dateCreation = $date;
         $this->status = $status;
         $this->utilisateur = $utilisateur;
+
+        // indexées par identifiant de ligne, comme dans ajouterSoiree()
+        foreach ($soireesDansCommande as $sdc) {
+            $this->soireesDansCommande[$sdc->getIdLigne()] = $sdc;
+        }
     }
 
     /**
